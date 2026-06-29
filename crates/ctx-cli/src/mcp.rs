@@ -1,0 +1,551 @@
+use std::{
+    io::{self, BufRead, Write},
+    path::{Path, PathBuf},
+};
+
+use anyhow::{anyhow, Context, Result};
+use clap::{Args, Subcommand};
+use ctx_history_core::{database_path, EventType};
+use ctx_history_store::Store;
+use serde_json::{json, Value};
+use uuid::Uuid;
+
+use super::{
+    compact_json, config::CONFIG_FILE, discovered_sources, event_window, event_window_json,
+    indexed_history_item_count, mark_share_safe, search_filters, session_transcript_json,
+    sources_json, OutputFormat, ProviderArg, RefreshArg, SearchDto, SearchRefreshReport,
+    TranscriptMode, MAX_SEARCH_LIMIT,
+};
+
+const MCP_PROTOCOL_VERSION: &str = "2025-11-25";
+
+#[derive(Debug, Args)]
+pub(crate) struct McpArgs {
+    #[command(subcommand)]
+    command: McpCommand,
+}
+
+#[derive(Debug, Subcommand)]
+enum McpCommand {
+    #[command(about = "Serve a read-only MCP server over stdio")]
+    Serve(McpServeArgs),
+}
+
+#[derive(Debug, Args)]
+struct McpServeArgs {}
+
+pub(crate) fn run(args: McpArgs, data_root: PathBuf) -> Result<()> {
+    match args.command {
+        McpCommand::Serve(_) => serve_stdio(data_root),
+    }
+}
+
+fn serve_stdio(data_root: PathBuf) -> Result<()> {
+    let stdin = io::stdin();
+    let stdout = io::stdout();
+    let mut stdout = stdout.lock();
+
+    for line in stdin.lock().lines() {
+        let line = line?;
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+        if let Some(response) = handle_line(line, &data_root) {
+            writeln!(stdout, "{}", serde_json::to_string(&response)?)?;
+            stdout.flush()?;
+        }
+    }
+    Ok(())
+}
+
+fn handle_line(line: &str, data_root: &Path) -> Option<Value> {
+    let message = match serde_json::from_str::<Value>(line) {
+        Ok(message) => message,
+        Err(err) => {
+            return Some(error_response(
+                Value::Null,
+                -32700,
+                "Parse error",
+                Some(json!({ "error": err.to_string() })),
+            ));
+        }
+    };
+    handle_message(message, data_root)
+}
+
+fn handle_message(message: Value, data_root: &Path) -> Option<Value> {
+    let id = message
+        .as_object()
+        .and_then(|object| object.get("id"))
+        .cloned();
+    let Some(method) = message.get("method").and_then(Value::as_str) else {
+        return id.map(|id| error_response(id, -32600, "Invalid Request", None));
+    };
+    let Some(id) = id else {
+        return None;
+    };
+    let params = message.get("params").cloned().unwrap_or_else(|| json!({}));
+    let result = match method {
+        "initialize" => Ok(initialize_result()),
+        "ping" => Ok(json!({})),
+        "tools/list" => Ok(json!({ "tools": tool_definitions() })),
+        "tools/call" => handle_tools_call(params, data_root),
+        _ => Err(json_rpc_error(-32601, "Method not found", None)),
+    };
+    Some(match result {
+        Ok(result) => success_response(id, result),
+        Err(error) => {
+            if let Some(object) = error.as_object() {
+                let code = object.get("code").and_then(Value::as_i64).unwrap_or(-32603);
+                let message = object
+                    .get("message")
+                    .and_then(Value::as_str)
+                    .unwrap_or("Internal error");
+                let data = object.get("data").cloned();
+                error_response(id, code, message, data)
+            } else {
+                error_response(id, -32603, "Internal error", Some(error))
+            }
+        }
+    })
+}
+
+fn initialize_result() -> Value {
+    json!({
+        "protocolVersion": MCP_PROTOCOL_VERSION,
+        "capabilities": {
+            "tools": {
+                "listChanged": false
+            }
+        },
+        "serverInfo": {
+            "name": "ctx",
+            "version": env!("CARGO_PKG_VERSION")
+        },
+        "instructions": "Read-only access to the local ctx index. This minimal server supports initialize, ping, tools/list, and tools/call over newline-delimited stdio. It does not expose MCP resources or prompts, and tools do not import provider history, write provider files, or write repositories."
+    })
+}
+
+fn handle_tools_call(params: Value, data_root: &Path) -> Result<Value, Value> {
+    let name = params.get("name").and_then(Value::as_str).ok_or_else(|| {
+        json_rpc_error(
+            -32602,
+            "Invalid params",
+            Some(json!({ "error": "tools/call requires params.name" })),
+        )
+    })?;
+    let arguments = params
+        .get("arguments")
+        .cloned()
+        .unwrap_or_else(|| json!({}));
+    if !arguments.is_object() {
+        return Err(json_rpc_error(
+            -32602,
+            "Invalid params",
+            Some(json!({ "error": "tools/call params.arguments must be an object" })),
+        ));
+    }
+
+    let result = match name {
+        "status" => tool_status(data_root),
+        "sources" => tool_sources(),
+        "search" => tool_search(&arguments, data_root),
+        "show_session" => tool_show_session(&arguments, data_root),
+        "show_event" => tool_show_event(&arguments, data_root),
+        _ => {
+            return Err(json_rpc_error(
+                -32602,
+                "Invalid params",
+                Some(json!({ "error": format!("unknown tool {name}") })),
+            ))
+        }
+    };
+
+    Ok(match result {
+        Ok(value) => tool_result(value),
+        Err(err) => tool_error_result(err),
+    })
+}
+
+fn tool_status(data_root: &Path) -> Result<Value> {
+    let db_path = database_path(data_root.to_path_buf());
+    let initialized = db_path.exists();
+    let (
+        indexed_items,
+        indexed_sources,
+        cataloged_sessions,
+        indexed_catalog_sessions,
+        pending_catalog_sessions,
+        failed_catalog_sessions,
+        stale_catalog_sessions,
+    ) = if initialized {
+        let store = Store::open_read_only(&db_path)
+            .with_context(|| format!("open read-only ctx store {}", db_path.display()))?;
+        let catalog_counts = store.catalog_session_counts()?;
+        (
+            indexed_history_item_count(&store)?,
+            store.capture_source_count()?,
+            catalog_counts.total,
+            catalog_counts.indexed,
+            catalog_counts.pending,
+            catalog_counts.failed,
+            catalog_counts.stale,
+        )
+    } else {
+        (0, 0, 0, 0, 0, 0, 0)
+    };
+
+    Ok(json!({
+        "schema_version": 1,
+        "initialized": initialized,
+        "data_root": data_root,
+        "database_path": db_path,
+        "config_path": data_root.join(CONFIG_FILE),
+        "indexed_items": indexed_items,
+        "indexed_sources": indexed_sources,
+        "cataloged_sessions": cataloged_sessions,
+        "indexed_catalog_sessions": indexed_catalog_sessions,
+        "pending_catalog_sessions": pending_catalog_sessions,
+        "failed_catalog_sessions": failed_catalog_sessions,
+        "stale_catalog_sessions": stale_catalog_sessions,
+        "local_only": true,
+        "read_only": true,
+    }))
+}
+
+fn tool_sources() -> Result<Value> {
+    let sources = discovered_sources();
+    Ok(json!({
+        "schema_version": 1,
+        "sources": sources_json(&sources),
+        "read_only": true,
+    }))
+}
+
+fn tool_search(arguments: &Value, data_root: &Path) -> Result<Value> {
+    let store = open_existing_store(data_root)?;
+    let query = optional_string(arguments, "query")?.unwrap_or_default();
+    let limit = optional_usize(arguments, "limit")?.unwrap_or(20);
+    if !(1..=MAX_SEARCH_LIMIT).contains(&limit) {
+        return Err(anyhow!("limit must be between 1 and {MAX_SEARCH_LIMIT}"));
+    }
+    let provider = optional_provider(arguments, "provider")?;
+    let session = optional_uuid(arguments, "session")?;
+    let repo = optional_string(arguments, "repo")?;
+    let since = optional_string(arguments, "since")?;
+    let primary_only = optional_bool(arguments, "primary_only")?.unwrap_or(false);
+    let include_subagents = optional_bool(arguments, "include_subagents")?.unwrap_or(false);
+    let event_type = optional_string(arguments, "event_type")?;
+    let file = optional_string(arguments, "file")?.map(PathBuf::from);
+    let events = optional_bool(arguments, "events")?.unwrap_or(false);
+
+    let options = ctx_history_search::PacketOptions {
+        limit,
+        filters: search_filters(
+            session,
+            provider,
+            repo,
+            since,
+            primary_only,
+            include_subagents,
+            event_type,
+            file,
+        )?,
+        result_mode: if events {
+            ctx_history_search::SearchResultMode::Events
+        } else {
+            ctx_history_search::SearchResultMode::Sessions
+        },
+        ..ctx_history_search::PacketOptions::default()
+    };
+    let packet = ctx_history_search::search_packet(&store, &query, &options)?;
+    let refresh = SearchRefreshReport::skipped(RefreshArg::Off, "skipped");
+    let mut value = SearchDto::packet(&store, &packet, &refresh);
+    mark_share_safe(&mut value);
+    Ok(value)
+}
+
+fn tool_show_session(arguments: &Value, data_root: &Path) -> Result<Value> {
+    let store = open_existing_store(data_root)?;
+    let session_id = required_uuid(arguments, "ctx_session_id")?;
+    let mode = optional_transcript_mode(arguments, "mode")?.unwrap_or(TranscriptMode::Lite);
+    let session = store.get_session(session_id)?;
+    let events = store.events_for_session(session.id)?;
+    Ok(session_transcript_json(
+        &store,
+        &session,
+        &events,
+        mode,
+        OutputFormat::Json,
+    ))
+}
+
+fn tool_show_event(arguments: &Value, data_root: &Path) -> Result<Value> {
+    let store = open_existing_store(data_root)?;
+    let event_id = required_uuid(arguments, "ctx_event_id")?;
+    let before = optional_usize(arguments, "before")?.unwrap_or(0);
+    let after = optional_usize(arguments, "after")?.unwrap_or(0);
+    let window = optional_usize(arguments, "window")?;
+    let event = store.get_event(event_id)?;
+    let events = event_window(&store, &event, before, after, window)?;
+    Ok(event_window_json(
+        &store,
+        &event,
+        &events,
+        OutputFormat::Json,
+    ))
+}
+
+fn open_existing_store(data_root: &Path) -> Result<Store> {
+    let db_path = database_path(data_root.to_path_buf());
+    if !db_path.exists() {
+        return Err(anyhow!(
+            "ctx store is not initialized at {}; run `ctx setup` or `ctx import` first",
+            db_path.display()
+        ));
+    }
+    Store::open_read_only(&db_path)
+        .with_context(|| format!("open read-only ctx store {}", db_path.display()))
+}
+
+fn tool_result(structured: Value) -> Value {
+    let text = serde_json::to_string_pretty(&structured)
+        .unwrap_or_else(|_| "{\"error\":\"failed to render JSON\"}".to_owned());
+    json!({
+        "content": [
+            {
+                "type": "text",
+                "text": text,
+            }
+        ],
+        "structuredContent": structured,
+    })
+}
+
+fn tool_error_result(err: anyhow::Error) -> Value {
+    tool_result(json!({
+        "error": err.to_string(),
+    }))
+    .as_object()
+    .map(|object| {
+        let mut object = object.clone();
+        object.insert("isError".to_owned(), Value::Bool(true));
+        Value::Object(object)
+    })
+    .unwrap_or_else(|| {
+        json!({
+            "isError": true,
+            "content": [
+                {
+                    "type": "text",
+                    "text": err.to_string(),
+                }
+            ],
+            "structuredContent": {
+                "error": err.to_string(),
+            }
+        })
+    })
+}
+
+fn tool_definitions() -> Vec<Value> {
+    vec![
+        json!({
+            "name": "status",
+            "title": "Status",
+            "description": "Return local ctx index status without writing to provider history or repositories.",
+            "inputSchema": object_schema(json!({}), vec![]),
+            "annotations": { "readOnlyHint": true },
+        }),
+        json!({
+            "name": "sources",
+            "title": "Sources",
+            "description": "List discovered local agent history sources.",
+            "inputSchema": object_schema(json!({}), vec![]),
+            "annotations": { "readOnlyHint": true },
+        }),
+        json!({
+            "name": "search",
+            "title": "Search",
+            "description": "Search the existing local ctx index. This does not refresh or import provider history.",
+            "inputSchema": object_schema(json!({
+                "query": { "type": "string" },
+                "limit": { "type": "integer", "minimum": 1, "maximum": MAX_SEARCH_LIMIT, "default": 20 },
+                "provider": { "type": "string", "enum": provider_names() },
+                "repo": { "type": "string" },
+                "since": { "type": "string", "description": "RFC3339 timestamp or day window such as 30d." },
+                "primary_only": { "type": "boolean", "default": false },
+                "include_subagents": { "type": "boolean", "default": false },
+                "event_type": { "type": "string", "enum": event_type_names() },
+                "file": { "type": "string" },
+                "session": { "type": "string", "description": "ctx session id." },
+                "events": { "type": "boolean", "default": false }
+            }), vec![]),
+            "annotations": { "readOnlyHint": true },
+        }),
+        json!({
+            "name": "show_session",
+            "title": "Show Session",
+            "description": "Return an indexed session transcript by ctx session id.",
+            "inputSchema": object_schema(json!({
+                "ctx_session_id": { "type": "string" },
+                "mode": { "type": "string", "enum": ["full", "lite", "log"], "default": "lite" }
+            }), vec!["ctx_session_id"]),
+            "annotations": { "readOnlyHint": true },
+        }),
+        json!({
+            "name": "show_event",
+            "title": "Show Event",
+            "description": "Return an indexed event and optional surrounding event window by ctx event id.",
+            "inputSchema": object_schema(json!({
+                "ctx_event_id": { "type": "string" },
+                "before": { "type": "integer", "minimum": 0, "default": 0 },
+                "after": { "type": "integer", "minimum": 0, "default": 0 },
+                "window": { "type": "integer", "minimum": 0 }
+            }), vec!["ctx_event_id"]),
+            "annotations": { "readOnlyHint": true },
+        }),
+    ]
+}
+
+fn object_schema(properties: Value, required: Vec<&str>) -> Value {
+    compact_json(json!({
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": false,
+    }))
+}
+
+fn provider_names() -> Vec<&'static str> {
+    vec![
+        "codex",
+        "pi",
+        "claude",
+        "opencode",
+        "antigravity",
+        "gemini",
+        "cursor",
+        "copilot_cli",
+        "factory_ai_droid",
+    ]
+}
+
+fn event_type_names() -> Vec<&'static str> {
+    vec![
+        EventType::Message.as_str(),
+        EventType::ToolCall.as_str(),
+        EventType::ToolOutput.as_str(),
+        EventType::CommandStarted.as_str(),
+        EventType::CommandOutput.as_str(),
+        EventType::CommandFinished.as_str(),
+        EventType::FileTouched.as_str(),
+        EventType::VcsChange.as_str(),
+        EventType::Artifact.as_str(),
+        EventType::Summary.as_str(),
+        EventType::Notice.as_str(),
+    ]
+}
+
+fn optional_string(arguments: &Value, key: &str) -> Result<Option<String>> {
+    match arguments.get(key) {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::String(value)) => Ok(Some(value.clone())),
+        Some(_) => Err(anyhow!("{key} must be a string")),
+    }
+}
+
+fn optional_bool(arguments: &Value, key: &str) -> Result<Option<bool>> {
+    match arguments.get(key) {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::Bool(value)) => Ok(Some(*value)),
+        Some(_) => Err(anyhow!("{key} must be a boolean")),
+    }
+}
+
+fn optional_usize(arguments: &Value, key: &str) -> Result<Option<usize>> {
+    match arguments.get(key) {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::Number(value)) => {
+            let value = value
+                .as_u64()
+                .ok_or_else(|| anyhow!("{key} must be a non-negative integer"))?;
+            usize::try_from(value)
+                .map(Some)
+                .map_err(|_| anyhow!("{key} is too large"))
+        }
+        Some(_) => Err(anyhow!("{key} must be a non-negative integer")),
+    }
+}
+
+fn required_uuid(arguments: &Value, key: &str) -> Result<Uuid> {
+    optional_uuid(arguments, key)?.ok_or_else(|| anyhow!("{key} is required"))
+}
+
+fn optional_uuid(arguments: &Value, key: &str) -> Result<Option<Uuid>> {
+    optional_string(arguments, key)?
+        .map(|value| Uuid::parse_str(&value).with_context(|| format!("invalid {key}")))
+        .transpose()
+}
+
+fn optional_provider(arguments: &Value, key: &str) -> Result<Option<ProviderArg>> {
+    let Some(provider) = optional_string(arguments, key)? else {
+        return Ok(None);
+    };
+    match provider.as_str() {
+        "codex" => Ok(Some(ProviderArg::Codex)),
+        "pi" => Ok(Some(ProviderArg::Pi)),
+        "claude" => Ok(Some(ProviderArg::Claude)),
+        "opencode" => Ok(Some(ProviderArg::OpenCode)),
+        "antigravity" => Ok(Some(ProviderArg::Antigravity)),
+        "gemini" => Ok(Some(ProviderArg::Gemini)),
+        "cursor" => Ok(Some(ProviderArg::Cursor)),
+        "copilot_cli" => Ok(Some(ProviderArg::CopilotCli)),
+        "factory_ai_droid" => Ok(Some(ProviderArg::FactoryAiDroid)),
+        _ => Err(anyhow!(
+            "provider must be one of {}",
+            provider_names().join(", ")
+        )),
+    }
+}
+
+fn optional_transcript_mode(arguments: &Value, key: &str) -> Result<Option<TranscriptMode>> {
+    let Some(mode) = optional_string(arguments, key)? else {
+        return Ok(None);
+    };
+    match mode.as_str() {
+        "full" => Ok(Some(TranscriptMode::Full)),
+        "lite" => Ok(Some(TranscriptMode::Lite)),
+        "log" => Ok(Some(TranscriptMode::Log)),
+        _ => Err(anyhow!("mode must be one of full, lite, log")),
+    }
+}
+
+fn success_response(id: Value, result: Value) -> Value {
+    json!({
+        "jsonrpc": "2.0",
+        "id": id,
+        "result": result,
+    })
+}
+
+fn error_response(id: Value, code: i64, message: &str, data: Option<Value>) -> Value {
+    compact_json(json!({
+        "jsonrpc": "2.0",
+        "id": id,
+        "error": {
+            "code": code,
+            "message": message,
+            "data": data,
+        }
+    }))
+}
+
+fn json_rpc_error(code: i64, message: &str, data: Option<Value>) -> Value {
+    compact_json(json!({
+        "code": code,
+        "message": message,
+        "data": data,
+    }))
+}

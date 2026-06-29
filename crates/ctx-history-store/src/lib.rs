@@ -17,7 +17,7 @@ use ctx_history_core::{
     RunStatus, RunType, Session, SessionEdge, SessionHistoryArchive, SessionStatus, Summary,
     SyncCursor, SyncMetadata, SyncState, VcsChange, VcsWorkspace, Visibility,
 };
-use rusqlite::{params, Connection, OptionalExtension, Transaction};
+use rusqlite::{params, Connection, OpenFlags, OptionalExtension, Transaction};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -827,6 +827,29 @@ impl Store {
         Self::open_with_busy_timeout(path, BUSY_TIMEOUT)
     }
 
+    pub fn open_read_only(path: impl AsRef<Path>) -> Result<Self> {
+        let path = path.as_ref().to_path_buf();
+        let object_dir = path
+            .parent()
+            .map(|parent| parent.join(OBJECTS_DIR))
+            .unwrap_or_else(|| PathBuf::from(OBJECTS_DIR));
+        let conn = Connection::open_with_flags(&path, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+        configure_read_only_connection(&conn, BUSY_TIMEOUT)?;
+        let user_version: i64 = conn.query_row("PRAGMA user_version", [], |row| row.get(0))?;
+        if user_version > SCHEMA_VERSION {
+            return Err(StoreError::UnsupportedSchemaVersion(user_version));
+        }
+        if user_version < 1 {
+            return Err(StoreError::UnsupportedSchemaVersion(user_version));
+        }
+        Ok(Self {
+            path,
+            object_dir,
+            conn,
+            busy_timeout: BUSY_TIMEOUT,
+        })
+    }
+
     pub fn open_with_busy_timeout(path: impl AsRef<Path>, busy_timeout: Duration) -> Result<Self> {
         let path = path.as_ref().to_path_buf();
         let mut migrated_legacy_layout = false;
@@ -1073,9 +1096,9 @@ impl Store {
     }
 
     pub fn capture_source_count(&self) -> Result<usize> {
-        let count: i64 = self
-            .conn
-            .query_row("SELECT COUNT(*) FROM capture_sources", [], |row| row.get(0))?;
+        let count: i64 =
+            self.conn
+                .query_row("SELECT COUNT(*) FROM capture_sources", [], |row| row.get(0))?;
         Ok(count as usize)
     }
 
@@ -3212,6 +3235,19 @@ fn configure_connection(conn: &Connection, busy_timeout: Duration) -> Result<()>
         PRAGMA temp_store = MEMORY;
         PRAGMA cache_size = -32768;
         PRAGMA wal_autocheckpoint = 10000;
+        "#,
+    )?;
+    Ok(())
+}
+
+fn configure_read_only_connection(conn: &Connection, busy_timeout: Duration) -> Result<()> {
+    conn.busy_timeout(busy_timeout)?;
+    conn.execute_batch(
+        r#"
+        PRAGMA foreign_keys = ON;
+        PRAGMA temp_store = MEMORY;
+        PRAGMA cache_size = -32768;
+        PRAGMA query_only = ON;
         "#,
     )?;
     Ok(())

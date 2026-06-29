@@ -94,6 +94,27 @@ fn json_output(command: &mut Command) -> Value {
     serde_json::from_slice(&output).unwrap()
 }
 
+fn mcp_roundtrip(temp: &TempDir, messages: &[Value]) -> Vec<Value> {
+    let mut stdin = String::new();
+    for message in messages {
+        stdin.push_str(&serde_json::to_string(message).unwrap());
+        stdin.push('\n');
+    }
+    let output = ctx(temp)
+        .args(["mcp", "serve"])
+        .write_stdin(stdin)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    String::from_utf8(output)
+        .unwrap()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect()
+}
+
 fn assert_omits_keys(value: &Value, forbidden_keys: &[&str]) {
     match value {
         Value::Object(map) => {
@@ -1230,6 +1251,172 @@ fn fresh_home_search_mvp_flow() {
     let validate = json_output(ctx(&temp).args(["validate", "--json"]));
     assert_eq!(validate["schema_version"], 1);
     assert_eq!(validate["valid"], true);
+}
+
+#[test]
+fn mcp_status_and_tools_list_are_read_only_without_initialized_store() {
+    let temp = tempdir();
+    let responses = mcp_roundtrip(
+        &temp,
+        &[
+            json!({
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-11-25",
+                    "capabilities": {},
+                    "clientInfo": { "name": "ctx-test", "version": "0" }
+                }
+            }),
+            json!({
+                "jsonrpc": "2.0",
+                "method": "notifications/initialized"
+            }),
+            json!({
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/list"
+            }),
+            json!({
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "tools/call",
+                "params": {
+                    "name": "status",
+                    "arguments": {}
+                }
+            }),
+        ],
+    );
+
+    assert_eq!(responses.len(), 3);
+    assert_eq!(responses[0]["result"]["serverInfo"]["name"], "ctx");
+    assert_eq!(
+        responses[0]["result"]["capabilities"]["tools"]["listChanged"],
+        false
+    );
+
+    let tools = responses[1]["result"]["tools"].as_array().unwrap();
+    for expected in ["status", "sources", "search", "show_session", "show_event"] {
+        assert!(
+            tools.iter().any(|tool| tool["name"] == expected),
+            "missing MCP tool {expected} in {tools:#?}"
+        );
+    }
+
+    let status = &responses[2]["result"]["structuredContent"];
+    assert_eq!(status["schema_version"], 1);
+    assert_eq!(status["initialized"], false);
+    assert_eq!(status["read_only"], true);
+    assert!(
+        !temp.path().join("work.sqlite").exists(),
+        "MCP status should not initialize the ctx store"
+    );
+}
+
+#[test]
+fn mcp_search_and_show_tools_return_structured_json_without_refresh() {
+    let temp = tempdir();
+    let fixture = provider_history_fixture("codex-sessions");
+    let imported = json_output(ctx(&temp).args([
+        "import",
+        "--provider",
+        "codex",
+        "--path",
+        &fixture,
+        "--json",
+        "--progress",
+        "none",
+    ]));
+    assert!(imported["totals"]["imported_events"].as_u64().unwrap() > 0);
+
+    let search_responses = mcp_roundtrip(
+        &temp,
+        &[
+            json!({
+                "jsonrpc": "2.0",
+                "id": "init",
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-11-25",
+                    "capabilities": {},
+                    "clientInfo": { "name": "ctx-test", "version": "0" }
+                }
+            }),
+            json!({
+                "jsonrpc": "2.0",
+                "id": "search",
+                "method": "tools/call",
+                "params": {
+                    "name": "search",
+                    "arguments": {
+                        "query": "onboarding",
+                        "provider": "codex",
+                        "limit": 5
+                    }
+                }
+            }),
+        ],
+    );
+    let search = &search_responses[1]["result"]["structuredContent"];
+    assert_eq!(search["schema_version"], 1);
+    assert_eq!(search["query"], "onboarding");
+    assert_eq!(search["freshness"]["mode"], "off");
+    assert_eq!(search["freshness"]["status"], "skipped");
+    assert_eq!(search["share_safe"], false);
+    assert!(search_responses[1]["result"]["content"][0]["text"]
+        .as_str()
+        .unwrap()
+        .contains("\"query\": \"onboarding\""));
+
+    let first_result = &search["results"][0];
+    let ctx_session_id = first_result["ctx_session_id"].as_str().unwrap();
+    let ctx_event_id = first_result["ctx_event_id"].as_str().unwrap();
+
+    let show_responses = mcp_roundtrip(
+        &temp,
+        &[
+            json!({
+                "jsonrpc": "2.0",
+                "id": "session",
+                "method": "tools/call",
+                "params": {
+                    "name": "show_session",
+                    "arguments": {
+                        "ctx_session_id": ctx_session_id,
+                        "mode": "lite"
+                    }
+                }
+            }),
+            json!({
+                "jsonrpc": "2.0",
+                "id": "event",
+                "method": "tools/call",
+                "params": {
+                    "name": "show_event",
+                    "arguments": {
+                        "ctx_event_id": ctx_event_id,
+                        "window": 1
+                    }
+                }
+            }),
+        ],
+    );
+
+    let session = &show_responses[0]["result"]["structuredContent"];
+    assert_eq!(session["item_type"], "session_transcript");
+    assert_eq!(session["ctx_session_id"], ctx_session_id);
+    assert_eq!(session["mode"], "lite");
+    assert!(session["events"].as_array().unwrap().iter().all(|event| {
+        event["ctx_session_id"] == ctx_session_id && event["ctx_event_id"].is_string()
+    }));
+
+    let event = &show_responses[1]["result"]["structuredContent"];
+    assert_eq!(event["item_type"], "event_window");
+    assert_eq!(event["ctx_event_id"], ctx_event_id);
+    assert_eq!(event["ctx_session_id"], ctx_session_id);
+    assert!(event["events"].as_array().unwrap().len() >= 1);
 }
 
 #[test]

@@ -17,6 +17,7 @@ use uuid::Uuid;
 mod analytics;
 mod config;
 mod identity;
+mod mcp;
 mod net;
 
 use analytics::{AnalyticsEvent, AnalyticsProperties};
@@ -77,6 +78,8 @@ enum CommandRoot {
     Export(ExportArgs),
     #[command(about = "Search indexed agent history")]
     Search(SearchArgs),
+    #[command(about = "Serve read-only ctx tools over MCP")]
+    Mcp(mcp::McpArgs),
     #[command(about = "Check local ctx health")]
     Doctor(JsonArgs),
     #[command(about = "Validate local ctx storage")]
@@ -285,9 +288,14 @@ impl CommandRoot {
             Self::Locate(_) => "locate",
             Self::Export(_) => "export",
             Self::Search(_) => "search",
+            Self::Mcp(_) => "mcp",
             Self::Doctor(_) => "doctor",
             Self::Validate(_) => "validate",
         }
+    }
+
+    fn sends_analytics(&self) -> bool {
+        !matches!(self, Self::Mcp(_))
     }
 
     fn json_output(&self) -> bool {
@@ -301,6 +309,7 @@ impl CommandRoot {
             Self::Locate(args) => args.json_output(),
             Self::Export(args) => args.json_output(),
             Self::Search(args) => args.json,
+            Self::Mcp(_) => false,
             Self::Doctor(args) => args.json,
             Self::Validate(args) => args.json,
         }
@@ -1028,6 +1037,7 @@ fn main() -> Result<()> {
     let started = Instant::now();
     let cli = Cli::parse();
     let action = cli.command.name();
+    let sends_analytics = cli.command.sends_analytics();
     let json_output = cli.command.json_output();
     let mut analytics_properties = command_analytics_properties(&cli.command);
     let data_root = cli
@@ -1048,22 +1058,25 @@ fn main() -> Result<()> {
         CommandRoot::Locate(args) => run_locate(args, data_root.clone(), &mut analytics_properties),
         CommandRoot::Export(args) => run_export(args, data_root.clone(), &mut analytics_properties),
         CommandRoot::Search(args) => run_search(args, data_root.clone(), &mut analytics_properties),
+        CommandRoot::Mcp(args) => mcp::run(args, data_root.clone()),
         CommandRoot::Doctor(args) => run_doctor(args, data_root.clone(), &mut analytics_properties),
         CommandRoot::Validate(args) => {
             run_validate(args, data_root.clone(), &mut analytics_properties)
         }
     };
-    analytics::send_cli_event(
-        &data_root,
-        &config,
-        AnalyticsEvent {
-            action,
-            json_output,
-            success: result.is_ok(),
-            duration: started.elapsed(),
-            properties: analytics_properties,
-        },
-    );
+    if sends_analytics {
+        analytics::send_cli_event(
+            &data_root,
+            &config,
+            AnalyticsEvent {
+                action,
+                json_output,
+                success: result.is_ok(),
+                duration: started.elapsed(),
+                properties: analytics_properties,
+            },
+        );
+    }
     result
 }
 
@@ -1195,6 +1208,7 @@ fn command_analytics_properties(command: &CommandRoot) -> AnalyticsProperties {
                 );
             }
         }
+        CommandRoot::Mcp(_) => {}
     }
     properties
 }
