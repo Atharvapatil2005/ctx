@@ -1405,7 +1405,7 @@ fn run_status(
         let store = Store::open(&db_path)?;
         (
             indexed_history_item_count(&store)?,
-            store.list_capture_sources()?.len(),
+            store.capture_source_count()?,
             store.catalog_session_counts()?,
         )
     } else {

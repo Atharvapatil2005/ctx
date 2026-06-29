@@ -1072,6 +1072,13 @@ impl Store {
         collect_rows(rows)
     }
 
+    pub fn capture_source_count(&self) -> Result<usize> {
+        let count: i64 = self
+            .conn
+            .query_row("SELECT COUNT(*) FROM capture_sources", [], |row| row.get(0))?;
+        Ok(count as usize)
+    }
+
     pub fn capture_source_by_external_session(
         &self,
         provider: CaptureProvider,
@@ -6118,6 +6125,31 @@ mod search_order_tests {
         }
 
         assert_eq!(store.indexed_history_item_count().unwrap(), 5);
+    }
+
+    #[test]
+    fn capture_source_count_uses_aggregate_count() {
+        let temp = tempdir();
+        let store = Store::open(temp.path().join("work.sqlite")).unwrap();
+
+        for index in 1..=3 {
+            store
+                .conn
+                .execute(
+                    r#"
+                    INSERT INTO capture_sources
+                    (id, kind, provider, machine_id, started_at_ms, fidelity)
+                    VALUES (?1, 'provider_import', 'codex', 'test-machine', ?2, 'full')
+                    "#,
+                    params![
+                        format!("018f45d0-0000-7000-8000-000000070{index:03}"),
+                        i64::from(index),
+                    ],
+                )
+                .unwrap();
+        }
+
+        assert_eq!(store.capture_source_count().unwrap(), 3);
     }
 
     fn stable_tie_record(index: u16) -> HistoryRecord {
