@@ -243,6 +243,8 @@ fn assert_search_provider_oracle_with_scope(
             assert!(result["more_matches_in_session"].is_number());
             assert_session_suggested_next_commands(result);
         } else {
+            assert_eq!(result.get("session_importance"), None);
+            assert_eq!(result.get("more_matches_in_session"), None);
             assert_event_suggested_next_commands(result);
         }
         assert!(result["why_matched"]

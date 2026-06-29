@@ -673,7 +673,12 @@ fn normalize_search_result_ranks(results: &mut [SearchPacketResult]) {
         result.rank = (result.rank / max_rank).clamp(0.0, 1.0);
     }
     for result in results.iter_mut() {
-        result.session_importance = session_importance(result.rank, result.more_matches_in_session);
+        if result.result_scope == SearchResultScope::Session {
+            result.session_importance =
+                session_importance(result.rank, result.more_matches_in_session);
+        } else {
+            result.session_importance = 0.0;
+        }
     }
 }
 

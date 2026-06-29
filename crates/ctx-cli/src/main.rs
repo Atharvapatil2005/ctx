@@ -3069,8 +3069,10 @@ impl SearchDto {
                         "snippet": result.snippet,
                         "rank": result.rank,
                         "result_scope": result.result_scope,
-                        "session_importance": result.session_importance,
-                        "more_matches_in_session": result.more_matches_in_session,
+                        "session_importance": (result.result_scope == ctx_history_search::SearchResultScope::Session)
+                            .then_some(result.session_importance),
+                        "more_matches_in_session": (result.result_scope == ctx_history_search::SearchResultScope::Session)
+                            .then_some(result.more_matches_in_session),
                         "provider": result.provider,
                         "provider_session_id": result.provider_session_id,
                         "timestamp": result.timestamp,
