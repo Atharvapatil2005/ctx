@@ -9,6 +9,13 @@ Use ctx as a local retrieval tool before repeating investigation work. Treat ctx
 output as cited source material from local transcripts, not as generated
 analysis.
 
+Use this skill in two modes:
+
+- retrieval before work, when prior sessions may contain decisions, commands,
+  failures, or source citations that affect the current task;
+- history research reports, when the user asks an agent or read-only subagent to
+  research a historical topic across prior local agent sessions.
+
 ## Prerequisites
 
 - Require the `ctx` CLI to be installed and set up.
@@ -41,7 +48,7 @@ analysis.
    Treat `--resume` as an idempotent rescan marker, not a guarantee that every
    provider has native cursor resume.
 
-4. Search with tight filters whenever possible:
+4. Search with normal language first, then add tight filters when useful:
 
    ```bash
    ctx search "<query>" --json
@@ -49,7 +56,12 @@ analysis.
    ctx search "<query>" --repo <repo> --json
    ctx search "<query>" --file <path> --json
    ctx search "<query>" --since 30d --json
+   ctx search "<query>" --session <ctx-session-id> --events --json
    ```
+
+   Use default `ctx search` to find promising sessions. Use scoped
+   `ctx search ... --session <ctx-session-id> --events` when a session looks
+   relevant and you need dense event-level matches from that session.
 
 5. Inspect the best cited result before relying on it:
 
@@ -71,6 +83,50 @@ analysis.
    ctx export session <ctx-session-id> --mode lite --format markdown --out /tmp/ctx-session.md
    ```
 
+## History Research Reports
+
+When asked to research a historical topic, stay read-only unless the user also
+asks for edits. The agent writes the report; ctx only retrieves local source
+material.
+
+1. Restate the topic, scope, and desired length if the prompt is ambiguous.
+   Prefer concise reports by default; use a longer report when the user asks for
+   chronology, alternatives, or detailed evidence.
+2. Run several targeted searches. Vary query terms across user wording, file or
+   module names, error text, commands, branch names, and decision terms. Start
+   with default `ctx search`, then narrow with `--repo`, `--provider`, `--file`,
+   `--since`, or `--session <ctx-session-id> --events`.
+3. Inspect focused sources before drawing conclusions. Prefer `ctx show event`
+   for a hit plus nearby turns, and `ctx show session` when the whole session
+   arc matters:
+
+   ```bash
+   ctx show event <ctx-event-id> --window 5 --format json
+   ctx show session <ctx-session-id> --mode lite --format json
+   ```
+
+   Use full or log mode only when lite output omits necessary evidence.
+4. Compare evidence across sessions. Note agreements, conflicts, stale results,
+   missing raw sources, and gaps where searches did not find evidence.
+5. Produce the report as agent synthesis with citations. Do not claim ctx
+   generated, inferred, or validated the report.
+
+Concise report shape:
+
+- answer or finding;
+- strongest supporting ctx IDs;
+- important caveats or gaps;
+- optional next search or verification step.
+
+Long report shape:
+
+- question and scope;
+- search method, including key queries and filters;
+- findings or chronology;
+- evidence table with provider, ctx session ID, ctx event ID when available, and
+  why each source matters;
+- conflicts, gaps, and suggested follow-up.
+
 ## Citation Rules
 
 - Cite ctx material when it affects your answer or implementation.
@@ -87,6 +143,9 @@ analysis.
 - Do not say ctx inferred a decision unless the cited text explicitly states
   that decision.
 - Do not state that ctx wrote model analysis.
+- Do not paste raw transcripts, large JSON payloads, secrets, tokens, or private
+  paths into a user-facing report. Summarize reviewed evidence and quote only
+  short excerpts needed to support a claim.
 - Treat `~/.ctx`, provider transcript paths, and JSON output as private local
   history unless the user explicitly asks to share reviewed excerpts.
 - Use typed IDs. Do not fall back to old ambiguous `ctx show <uuid>` behavior.

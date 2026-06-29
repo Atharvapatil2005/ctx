@@ -65,11 +65,20 @@ Support means ctx can discover or read that harness's persisted local history an
 
 ## Install the skill
 
-The agent-history search skill teaches an agent to use ctx before it edits:
+The agent-history search skill teaches an agent to use ctx before it edits or
+when it needs to research prior local sessions:
 
 ```text
 Search prior local agent sessions with ctx. Inspect the best event or session.
 If retrieved history affects your answer, cite the ctx ID you used.
+```
+
+For a read-only research subagent, ask for a report explicitly:
+
+```text
+Use ctx to research prior local agent sessions about <topic>. Run multiple
+searches, inspect focused events or sessions, and return a concise report with
+ctx citations. Do not edit files.
 ```
 
 See [Agent History Search Skill](https://ctx.rs/agent-history-search-skill) for the installable skill, prompt pattern, and agent-specific setup links.

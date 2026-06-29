@@ -18,6 +18,33 @@ ctx search "sqlite migration failed" --repo ctx --json
 ctx show event <ctx-event-id> --window 5 --format json
 ```
 
+## History Research Reports
+
+Use the agent skill as a read-only research workflow when the task is to brief a
+human or another agent about prior work:
+
+```text
+Use ctx to research prior local agent sessions about <topic>. Run multiple
+searches, inspect the strongest events or sessions, and return a concise report
+with ctx citations. Do not edit files.
+```
+
+The agent writes the report from retrieved evidence; ctx does not synthesize
+reports. A practical command sequence is:
+
+```bash
+ctx search "<topic>" --json
+ctx search "<topic variant>" --repo <repo> --json
+ctx search "<topic>" --session <ctx-session-id> --events --json
+ctx show event <ctx-event-id> --window 5 --format json
+ctx show session <ctx-session-id> --mode lite --format json
+```
+
+For a concise report, include the finding, the strongest ctx IDs, and gaps. For
+a longer report, include the question, search method, findings or chronology,
+evidence table, conflicts, and follow-up searches. Summarize private transcript
+content instead of pasting raw JSON or large transcript excerpts.
+
 ## Deterministic Use
 
 Treat ctx output as retrieved source material. Do not state that ctx inferred a
