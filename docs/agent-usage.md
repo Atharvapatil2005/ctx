@@ -42,17 +42,17 @@ The agent writes the report from retrieved evidence; ctx does not synthesize
 reports. A practical command sequence is:
 
 ```bash
-ctx research "<topic>" --refresh off
 ctx search "<topic>" --refresh off
 ctx search "<topic variant>" --workspace <workspace> --refresh off
+ctx search "<topic>" --term "<related term>" --term "<error text>" --refresh off
 ctx search "<topic>" --session <ctx-session-id> --refresh off
 ctx show event <ctx-event-id> --window 5
 ctx show session <ctx-session-id>
 ```
 
-Start with `ctx research` when the topic may span multiple sessions. It returns
-a deterministic packet grouped by UTC date and session; the agent still writes
-the final report and must inspect cited events or sessions before making claims.
+Start with broad `ctx search` queries when the topic may span multiple sessions,
+then narrow by workspace, provider, file, date, or session. The agent writes the
+final report and must inspect cited events or sessions before making claims.
 
 For a concise report, include the finding, the strongest ctx IDs, and gaps. For
 a longer report, include the question, search method, findings or chronology,
@@ -80,9 +80,9 @@ guarantee that every provider has native cursor resume.
 
 ## JSON For Harnesses
 
-Agents should prefer default text for reading search, research, show, and
-locate output. JSON is for scripts, harnesses, `jq`, or exact field extraction;
-it is usually much larger and consumes more context.
+Agents should prefer default text for reading search, show, and locate output.
+JSON is for scripts, harnesses, `jq`, or exact field extraction; it is usually
+much larger and consumes more context.
 
 ```bash
 ctx status --json

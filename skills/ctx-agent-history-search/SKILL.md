@@ -51,28 +51,27 @@ Use this skill in two modes:
 4. Search with normal language first, then add tight filters when useful:
 
    ```bash
-   ctx research "<topic>" --refresh off
    ctx search "<query>"
    ctx search "<query>" --refresh off
    ctx search "<query>" --provider codex
    ctx search "<query>" --workspace <workspace>
    ctx search "<query>" --file <path>
    ctx search "<query>" --since 30d
+   ctx search "<query>" --term "<related term>" --term "<error text>"
    ctx search "<query>" --session <ctx-session-id>
    ```
 
    Use default text output for agent reading. Do not add `--json` for
-   search, research, show, or locate unless you are piping it into `jq` or a
-   script, or you need exact machine-readable fields. JSON output is much
-   larger and can quickly consume the context window. If JSON is necessary,
-   keep `--limit` small and extract only the fields you need.
+   search, show, or locate unless you are piping it into `jq` or a script, or
+   you need exact machine-readable fields. JSON output is much larger and can
+   quickly consume the context window. If JSON is necessary, keep `--limit`
+   small and extract only the fields you need.
 
-   Use `ctx research` when the prompt asks for a topic history or report across
-   multiple sessions. It returns a deterministic packet grouped by UTC date and
-   session; it does not write the report or make conclusions for you.
-   Use default `ctx search` to find promising sessions. Use scoped
-   `ctx search ... --session <ctx-session-id>` when a session looks
-   relevant and you need dense event-level matches from that session.
+   When the prompt asks for a topic history or report across multiple sessions,
+   run several `ctx search` queries with different wording and filters to find
+   promising sessions. Use scoped `ctx search ... --session <ctx-session-id>`
+   when a session looks relevant and you need dense event-level matches from
+   that session.
    Normal search may refresh the local ctx index before querying; use
    `--refresh off` when the prompt requires strictly read-only research over the
    existing index.
@@ -113,9 +112,9 @@ material.
    chronology, alternatives, or detailed evidence.
 2. Run several targeted searches. Vary query terms across user wording, file or
    module names, error text, commands, branch names, and decision terms. Start
-   with `ctx research "<topic>" --refresh off` for a multi-session map,
-   then narrow with default `ctx search`, `--workspace`, `--provider`, `--file`,
-   `--since`, or `--session <ctx-session-id>`.
+   with default `ctx search`, then broaden with `--term` or narrow with
+   `--workspace`, `--provider`, `--file`, `--since`, or
+   `--session <ctx-session-id>`.
    Add `--refresh off` when the report must not update the local ctx index.
 3. Inspect focused sources before drawing conclusions. Prefer `ctx show event`
    for a hit plus nearby turns, and `ctx show session` when the whole session
