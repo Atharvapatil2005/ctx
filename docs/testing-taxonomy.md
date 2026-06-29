@@ -79,6 +79,31 @@ The Codex incremental import perf gate verifies that a large no-op refresh uses
 catalog metadata cache hits, parses zero unchanged transcript bodies, imports
 zero events, and stays under the configured no-op latency thresholds.
 
+## Real-Corpus Search Quality
+
+Use the real-corpus quality benchmark when deciding whether a broader search
+strategy should become the default:
+
+```bash
+bash scripts/bench-real-search-quality.sh
+```
+
+The benchmark is intentionally opt-in and local-only. It reads the existing ctx
+index, forces `--refresh off`, compares `ctx search` and `ctx research` over the
+checked-in query manifest at
+`docs/benchmarks/real-search-quality-queries.json`, and writes private artifacts
+under `target/ctx-artifacts/real-search-quality`.
+
+Artifacts include:
+
+- `real-search-quality.json`, a machine-readable timing and top-result report;
+- `real-search-quality-review.md`, a quick human review sheet;
+- `real-search-quality-judge.csv`, per-result rows with empty judgment columns.
+
+Do not add this benchmark to normal CI. The corpus is private and mutable, and
+the artifacts can include private local snippets, paths, ctx IDs, and provider
+metadata.
+
 All default public tests must be hermetic. They must not require API keys,
 network access, provider accounts, hidden model calls, or writes into source
 repositories.
