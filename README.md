@@ -11,13 +11,13 @@ Those sessions are full of useful context:
 
 ctx indexes those logs into SQLite on your machine, then gives current and future agents a CLI for finding the prior discussion, command, or failed attempt before they repeat it.
 
-## Install and set up the CLI
+## Install and set up ctx
 
 ```bash
 curl -fsSL https://ctx.rs/install | sh
 ```
 
-## Install the agent skill
+Optional but recommended for agent sessions:
 
 ```bash
 npx skills add ctxrs/ctx
@@ -75,16 +75,6 @@ Support means ctx can discover or read that harness's persisted local history an
 | Antigravity / Gemini CLI | Supported |
 | Factory AI Droid | Supported |
 | Copilot CLI | Supported |
-
-## Install the ctx skill
-
-After the CLI is installed, add the agent-history search skill so your agent knows when to search prior sessions and how to cite retrieved context:
-
-```bash
-npx skills add ctxrs/ctx
-```
-
-The command uses the open `skills` installer to install `ctx-agent-history-search` into your agent. See [Install the ctx skill](https://ctx.rs/skill).
 
 ## How ctx compares
 
