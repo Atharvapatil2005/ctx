@@ -1,5 +1,5 @@
 {
-  "contractVersion": "memory-v1",
+  "contractVersion": "agent-history-v1",
   "schemaVersion": 1,
   "operation": "error",
   "backend": {
@@ -7,12 +7,12 @@
     "dataRoot": "/tmp/ctx-sdk-fixture"
   },
   "error": {
-    "code": "decode_error",
-    "message": "ctx returned invalid JSON",
+    "code": "not_found",
+    "message": "agent history item was not found",
     "retryable": false,
     "details": {
-      "adapter": "local-cli"
+      "operation": "showEvent"
     },
-    "cause": "expected value at line 1 column 1"
+    "cause": null
   }
 }

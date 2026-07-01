@@ -1,9 +1,9 @@
 # ctx Python SDK
 
-Experimental Python SDK for the local ctx `memory-v1` API.
+Experimental Python SDK for the local ctx `agent-history-v1` API.
 
 The SDK is intentionally small and network-free by default. It wraps local
-`ctx` CLI JSON and normalizes it into the shared `memory-v1` contract. Hosted
+`ctx` CLI JSON and normalizes it into the shared `agent-history-v1` contract. Hosted
 configuration types are present so application code can be written against one
 client shape, but hosted transport is not implemented yet.
 
@@ -33,7 +33,7 @@ for hit in response["search"].get("results", []):
 
 ## API
 
-The public methods mirror the memory-v1 client surface:
+The public methods mirror the agent-history-v1 client surface:
 
 - `status()`
 - `init()` for `ctx setup --json`
@@ -46,7 +46,7 @@ The public methods mirror the memory-v1 client surface:
 - `locate_session()` / `locateSession()`
 - `version()` and `versioning()`
 
-Every operation returns a dictionary with `contractVersion: "memory-v1"`,
+Every operation returns a dictionary with `contractVersion: "agent-history-v1"`,
 `schemaVersion: 1`, `operation`, `backend`, and an operation-specific payload
 such as `status`, `sources`, `import`, `search`, `event`, `session`, or
 `location`.
@@ -54,9 +54,9 @@ such as `status`, `sources`, `import`, `search`, `event`, `session`, or
 The package includes PEP 561 type metadata and exports operation-specific
 `TypedDict` envelopes such as `StatusResponse`, `SearchResponse`,
 `ShowEventResponse`, and `LocateSessionResponse`. These are hand-written to
-match the shared `memory-v1` contract while keeping runtime dependencies empty.
+match the shared `agent-history-v1` contract while keeping runtime dependencies empty.
 
-`sync()` is an alias for import because the current local memory-v1
+`sync()` is an alias for import because the current local agent-history-v1
 implementation syncs by importing local provider history into the ctx index.
 
 ## Errors
@@ -104,5 +104,5 @@ python3 -m unittest discover -s tests
 
 The native tests use fake local CLI scripts and do not require network access,
 API keys, or a populated ctx index. If shared contract fixtures are later added
-under `contracts/memory-v1/fixtures`, the fixture smoke test will consume them
+under `contracts/agent-history-v1/fixtures`, the fixture smoke test will consume them
 automatically.

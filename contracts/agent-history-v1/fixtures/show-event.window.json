@@ -1,5 +1,5 @@
 {
-  "contractVersion": "memory-v1",
+  "contractVersion": "agent-history-v1",
   "schemaVersion": 1,
   "operation": "showEvent",
   "backend": {
@@ -16,7 +16,7 @@
       "occurredAt": "2026-07-01T12:00:00Z",
       "source": "codex",
       "cursor": "line:2",
-      "text": "local memory search result",
+      "text": "local agent history search result",
       "redactionState": "redacted"
     },
     "events": [
@@ -29,7 +29,7 @@
         "occurredAt": "2026-07-01T12:00:00Z",
         "source": "codex",
         "cursor": "line:2",
-        "text": "local memory search result",
+        "text": "local agent history search result",
         "redactionState": "redacted"
       }
     ],

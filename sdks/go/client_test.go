@@ -114,7 +114,7 @@ func TestRejectsWrongCanonicalEnvelope(t *testing.T) {
 	}
 
 	client = NewClient(WithTransport(fakeTransport{response: `{
-		"contractVersion": "memory-v1",
+		"contractVersion": "agent-history-v1",
 		"schemaVersion": 1,
 		"operation": "search",
 		"backend": {"kind": "local"},
@@ -277,10 +277,10 @@ func TestCanonicalFixturesExposeTypedFields(t *testing.T) {
 }
 
 func TestContractFixturesIfPresent(t *testing.T) {
-	fixtureRoot := filepath.Clean("../../contracts/memory-v1/fixtures")
+	fixtureRoot := filepath.Clean("../../contracts/agent-history-v1/fixtures")
 	entries, err := os.ReadDir(fixtureRoot)
 	if errors.Is(err, os.ErrNotExist) {
-		t.Skip("memory-v1 fixtures are not present yet")
+		t.Skip("agent-history-v1 fixtures are not present yet")
 	}
 	if err != nil {
 		t.Fatalf("read fixture root: %v", err)
@@ -308,7 +308,7 @@ func TestContractFixturesIfPresent(t *testing.T) {
 		assertFixtureDecodes(t, path, operationFromFilename(entry.Name()), data)
 	}
 	if !seen {
-		t.Skip("memory-v1 fixture directory is present but empty")
+		t.Skip("agent-history-v1 fixture directory is present but empty")
 	}
 }
 
@@ -357,9 +357,9 @@ func assertFixtureDecodes(t *testing.T, path, operation string, data []byte) {
 
 func readFixture[T any](t *testing.T, name string) T {
 	t.Helper()
-	data, err := os.ReadFile(filepath.Join("../../contracts/memory-v1/fixtures", name))
+	data, err := os.ReadFile(filepath.Join("../../contracts/agent-history-v1/fixtures", name))
 	if errors.Is(err, os.ErrNotExist) {
-		t.Skip("memory-v1 fixtures are not present yet")
+		t.Skip("agent-history-v1 fixtures are not present yet")
 	}
 	if err != nil {
 		t.Fatalf("read fixture %s: %v", name, err)

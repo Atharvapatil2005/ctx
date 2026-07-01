@@ -3,7 +3,7 @@
 ctx includes experimental in-repo SDKs for using agent history search from
 tools, scripts, editors, and services.
 
-The SDKs all target the same `memory-v1` contract. They are thin clients over
+The SDKs all target the same `agent-history-v1` contract. They are thin clients over
 agent-history search primitives, not wrappers around SQLite tables, migrations, release
 tooling, or internal Rust crate shapes.
 
@@ -28,7 +28,7 @@ NuGet, or Go module tag releases yet. Use the source checkout directly.
 | Swift | `sdks/swift` |
 | .NET / C# | `sdks/dotnet` |
 
-Shared contract files live under `contracts/memory-v1`.
+Shared contract files live under `contracts/agent-history-v1`.
 
 ## API shape
 
@@ -46,20 +46,20 @@ Each SDK exposes typed operation-specific responses for:
 - version metadata
 - structured errors
 
-Responses include the common `memory-v1` envelope fields:
+Responses include the common `agent-history-v1` envelope fields:
 
 - `contractVersion`
 - `schemaVersion`
 - `operation`
 - `backend`
 
-Payloads include typed memory data such as freshness, citations, sessions,
+Payloads include typed agent history data such as freshness, citations, sessions,
 events, and source locations.
 
 ## Local and hosted backends
 
 Local clients execute the local `ctx` CLI and adapt its JSON into the public
-`memory-v1` contract. Local mode stays local-first: it does not make network
+`agent-history-v1` contract. Local mode stays local-first: it does not make network
 calls, call provider APIs, require API keys, or upload transcripts.
 
 Hosted client configuration is reserved for future ctx service support. Until a
@@ -68,7 +68,7 @@ structured `not_supported` error.
 
 ## Dogfood examples
 
-Each SDK includes a fake-by-default toy app or example that exercises the memory
+Each SDK includes a fake-by-default toy app or example that exercises the agent history
 workflow without reading private local history:
 
 `status -> init -> import/sync -> search -> showEvent -> showSession -> locateEvent -> locateSession`
@@ -110,6 +110,6 @@ CTX_SDK_STRICT_TOOLCHAINS=1 ./scripts/check-sdks.sh
 
 ## Related docs
 
-- [`contracts/memory-v1/README.md`](../contracts/memory-v1/README.md)
+- [`contracts/agent-history-v1/README.md`](../contracts/agent-history-v1/README.md)
 - [`docs/sdk-production-readiness.md`](sdk-production-readiness.md)
 - [`docs/agent-skill-install.md`](agent-skill-install.md)

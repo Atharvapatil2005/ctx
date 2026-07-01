@@ -2,7 +2,7 @@ package rs.ctx.memory;
 
 import java.util.Map;
 
-/** memory-v1 structured error payload. */
+/** agent-history-v1 structured error payload. */
 public final class MemoryError {
     private final Map<String, Object> fields;
 

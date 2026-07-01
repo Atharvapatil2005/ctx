@@ -1,7 +1,7 @@
 [package]
 name = "ctx-protocol"
 version = "0.12.0"
-description = "Experimental memory-v1 SDK contract types for ctx"
+description = "Experimental agent-history-v1 SDK contract types for ctx"
 edition.workspace = true
 license.workspace = true
 repository.workspace = true

@@ -1,4 +1,4 @@
-"""Transport implementations for memory-v1."""
+"""Transport implementations for agent-history-v1."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from .errors import (
     CtxMemoryTimeoutError,
     HostedTransportNotImplementedError,
 )
-from .memory_v1 import (
+from .agent_history_v1 import (
     envelope,
     hosted_backend,
     local_backend,
@@ -120,7 +120,7 @@ class MemoryTransport(Protocol):
 
 
 class LocalCliAdapter:
-    """memory-v1 transport backed by the local ctx CLI."""
+    """agent-history-v1 transport backed by the local ctx CLI."""
 
     name = "local-cli"
 
@@ -415,7 +415,7 @@ class LocalCliAdapter:
 
 
 class HostedAdapter:
-    """Hosted memory-v1 placeholder that performs no network I/O."""
+    """Hosted agent-history-v1 placeholder that performs no network I/O."""
 
     name = "hosted"
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the shared memory-v1 golden fixtures without third-party packages."""
+"""Validate the shared agent-history-v1 golden fixtures without third-party packages."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CONTRACT = ROOT / "contracts" / "memory-v1"
+CONTRACT = ROOT / "contracts" / "agent-history-v1"
 FIXTURES = CONTRACT / "fixtures"
 
 VALID_OPERATIONS = {
@@ -112,7 +112,7 @@ def json_type_matches(value, expected: str) -> bool:
 def validate_fixture(path: Path, schema: dict) -> None:
     data = json.loads(path.read_text())
     validate_schema(data, schema, schema, str(path))
-    require(data.get("contractVersion") == "memory-v1", f"{path}: bad contractVersion")
+    require(data.get("contractVersion") == "agent-history-v1", f"{path}: bad contractVersion")
     require(data.get("schemaVersion") == 1, f"{path}: bad schemaVersion")
     operation = data.get("operation")
     require(operation in VALID_OPERATIONS, f"{path}: bad operation {operation!r}")
@@ -166,7 +166,7 @@ def main() -> int:
     require(fixture_paths, "no fixtures found")
     for path in fixture_paths:
         validate_fixture(path, schema)
-    print(f"validated {len(fixture_paths)} memory-v1 fixtures")
+    print(f"validated {len(fixture_paths)} agent-history-v1 fixtures")
     return 0
 
 
@@ -174,5 +174,5 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except Exception as exc:
-        print(f"memory contract validation failed: {exc}", file=sys.stderr)
+        print(f"agent history contract validation failed: {exc}", file=sys.stderr)
         raise SystemExit(1)

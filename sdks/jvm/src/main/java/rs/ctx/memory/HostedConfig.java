@@ -1,6 +1,6 @@
 package rs.ctx.memory;
 
-/** Placeholder configuration for a future hosted memory-v1 backend. */
+/** Placeholder configuration for a future hosted agent-history-v1 backend. */
 public final class HostedConfig {
     private final String baseUrl;
     private final String apiKey;

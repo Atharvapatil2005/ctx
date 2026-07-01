@@ -9,7 +9,7 @@ import {
   CtxTimeoutError,
   CtxUnsupportedError,
   CtxValidationError,
-  MEMORY_V1_VERSION,
+  AGENT_HISTORY_V1_VERSION,
   createHostedMemoryClient,
   createLocalMemoryClient,
 } from "../src/index.js";
@@ -40,7 +40,7 @@ test("wraps status, init, sources, import, and sync CLI commands", async () => {
   const imported = await client.import({ provider: "codex", resume: true });
   await client.sync({ all: true });
 
-  assert.equal(status.contractVersion, MEMORY_V1_VERSION);
+  assert.equal(status.contractVersion, AGENT_HISTORY_V1_VERSION);
   assert.equal(status.operation, "status");
   assert.equal(status.status.initialized, true);
   assert.equal(sources.sources[0].provider, "codex");
@@ -130,7 +130,7 @@ test("builds search flags and normalizes nested CLI search output", async () => 
     includeCurrentSession: true,
   });
 
-  assert.equal(result.contractVersion, MEMORY_V1_VERSION);
+  assert.equal(result.contractVersion, AGENT_HISTORY_V1_VERSION);
   assert.equal(result.operation, "search");
   assert.equal(result.search.generatedAt, "2026-07-01T12:00:00Z");
   assert.equal(result.search.freshness.sourceCount, 1);
@@ -240,7 +240,7 @@ test("reports versioning metadata", async () => {
 
   assert.deepEqual(await client.version(), {
     schema_version: 1,
-    api_version: MEMORY_V1_VERSION,
+    api_version: AGENT_HISTORY_V1_VERSION,
     sdk_version: "0.0.0",
     adapter: "local-cli",
     ctx_version: "1.2.3",
@@ -281,7 +281,7 @@ test("hosted client is an explicit placeholder", async () => {
 test("dogfood toy app runs status/search/show/locate with mocked ctx", async () => {
   assert.deepEqual(await runDogfoodToy({ env: {} }), {
     ready: true,
-    query: "local memory",
+    query: "local agent history",
     firstScope: "event",
     eventCount: 1,
     sessionMode: "lite",
@@ -290,8 +290,8 @@ test("dogfood toy app runs status/search/show/locate with mocked ctx", async () 
   });
 });
 
-test("shared memory-v1 fixtures use discriminated operation payloads", async () => {
-  const fixturesDir = join(repoRoot, "contracts", "memory-v1", "fixtures");
+test("shared agent-history-v1 fixtures use discriminated operation payloads", async () => {
+  const fixturesDir = join(repoRoot, "contracts", "agent-history-v1", "fixtures");
   let entries = [];
   try {
     entries = await readdir(fixturesDir);
@@ -302,12 +302,12 @@ test("shared memory-v1 fixtures use discriminated operation payloads", async () 
   }
 
   const fixtureFiles = entries.filter((name) => name.endsWith(".json"));
-  assert.notEqual(fixtureFiles.length, 0, "memory-v1 fixture directory should not be empty");
+  assert.notEqual(fixtureFiles.length, 0, "agent-history-v1 fixture directory should not be empty");
   for (const entry of fixtureFiles) {
     const fixture = JSON.parse(await readFile(join(fixturesDir, entry), "utf8"));
     const operation = operationFromFixtureName(entry);
     assert.equal(typeof fixture, "object", `${entry} should contain a JSON object`);
-    assert.equal(fixture.contractVersion, MEMORY_V1_VERSION, `${entry} contractVersion`);
+    assert.equal(fixture.contractVersion, AGENT_HISTORY_V1_VERSION, `${entry} contractVersion`);
     assert.equal(fixture.schemaVersion, 1, `${entry} schemaVersion`);
     assert.equal(fixture.operation, operation, `${entry} operation`);
     assertFixturePayload(entry, fixture);
@@ -334,7 +334,7 @@ function operationFromFixtureName(name) {
     case "locate-session":
       return "locateSession";
     default:
-      throw new Error(`unknown memory-v1 fixture operation in ${name}`);
+      throw new Error(`unknown agent-history-v1 fixture operation in ${name}`);
   }
 }
 

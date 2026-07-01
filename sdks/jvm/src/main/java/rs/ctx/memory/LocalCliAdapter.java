@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-/** memory-v1 transport backed by a local ctx CLI. */
+/** agent-history-v1 transport backed by a local ctx CLI. */
 public final class LocalCliAdapter implements MemoryTransport {
     private final LocalCliConfig config;
     private final CommandRunner runner;

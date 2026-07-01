@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 
 namespace Ctx.Memory;
 
-/// <summary>Local-only memory-v1 transport backed by the ctx CLI.</summary>
+/// <summary>Local-only agent-history-v1 transport backed by the ctx CLI.</summary>
 public sealed class LocalCliAdapter : IMemoryTransport
 {
     public LocalCliAdapter(LocalMemoryConfig? config = null)

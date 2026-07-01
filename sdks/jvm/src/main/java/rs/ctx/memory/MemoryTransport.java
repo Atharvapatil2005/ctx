@@ -1,6 +1,6 @@
 package rs.ctx.memory;
 
-/** Transport for memory-v1 operations. */
+/** Transport for agent-history-v1 operations. */
 public interface MemoryTransport {
     String name();
 

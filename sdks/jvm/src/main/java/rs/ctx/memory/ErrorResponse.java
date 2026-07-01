@@ -2,7 +2,7 @@ package rs.ctx.memory;
 
 import java.util.Map;
 
-/** Response wrapper for canonical memory-v1 error fixtures. */
+/** Response wrapper for canonical agent-history-v1 error fixtures. */
 public final class ErrorResponse extends MemoryEnvelope {
     private final MemoryError error;
 

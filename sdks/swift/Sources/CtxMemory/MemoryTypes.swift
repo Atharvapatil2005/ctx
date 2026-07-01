@@ -1,8 +1,8 @@
 import Foundation
 
-public let MEMORY_V1_VERSION = "memory-v1"
+public let AGENT_HISTORY_V1_VERSION = "agent-history-v1"
 public let CTX_MEMORY_SWIFT_SDK_VERSION = "0.0.0"
-public let MEMORY_V1_SCHEMA_VERSION = 1
+public let AGENT_HISTORY_V1_SCHEMA_VERSION = 1
 
 public enum MemoryOperation: String, Codable, Sendable {
     case status
@@ -97,8 +97,8 @@ public struct MemoryEnvelope: Codable, Equatable, Sendable {
     public var error: MemoryContractError?
 
     public init(
-        contractVersion: String = MEMORY_V1_VERSION,
-        schemaVersion: Int = MEMORY_V1_SCHEMA_VERSION,
+        contractVersion: String = AGENT_HISTORY_V1_VERSION,
+        schemaVersion: Int = AGENT_HISTORY_V1_SCHEMA_VERSION,
         operation: MemoryOperation,
         backend: MemoryBackend? = nil,
         status: MemoryStatus? = nil,
@@ -260,7 +260,7 @@ public struct LocateSessionResponse: Equatable, Sendable {
 private func missingPayload(_ payload: String, operation: MemoryOperation) -> CtxMemorySDKError {
     CtxMemorySDKError(
         code: .decodeError,
-        message: "memory-v1 \(operation.rawValue) response did not contain \(payload) payload"
+        message: "agent-history-v1 \(operation.rawValue) response did not contain \(payload) payload"
     )
 }
 
@@ -863,8 +863,8 @@ public struct VersionInfo: Codable, Equatable, Sendable {
     public var hosted: Bool?
 
     public init(
-        schemaVersion: Int = MEMORY_V1_SCHEMA_VERSION,
-        apiVersion: String = MEMORY_V1_VERSION,
+        schemaVersion: Int = AGENT_HISTORY_V1_SCHEMA_VERSION,
+        apiVersion: String = AGENT_HISTORY_V1_VERSION,
         sdkVersion: String = CTX_MEMORY_SWIFT_SDK_VERSION,
         adapter: String,
         ctxVersion: String? = nil,

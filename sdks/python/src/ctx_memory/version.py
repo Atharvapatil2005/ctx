@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 SDK_VERSION = "0.1.0a0"
-API_VERSION = "memory-v1"
+API_VERSION = "agent-history-v1"
 
 
 @dataclass(frozen=True)

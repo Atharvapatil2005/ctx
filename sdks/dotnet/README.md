@@ -1,8 +1,8 @@
 # ctx Memory SDK for .NET
 
-Experimental C# SDK for the `memory-v1` ctx contract. The SDK is local-first by
+Experimental C# SDK for the `agent-history-v1` ctx contract. The SDK is local-first by
 default: it shells out to the `ctx` CLI, reads JSON from stdout, and wraps the
-result in memory-v1 envelopes. Local mode does not make network calls or upload
+result in agent-history-v1 envelopes. Local mode does not make network calls or upload
 transcripts.
 
 The hosted configuration surface is present as a placeholder for a future ctx
@@ -37,7 +37,7 @@ var imported = await client.ImportMemoryAsync(new ImportOptions
 
 var results = await client.SearchAsync(new SearchOptions
 {
-    Query = "local memory",
+    Query = "local agent history",
     Provider = "codex",
     Refresh = "off",
     Limit = 10
@@ -68,7 +68,7 @@ Console.WriteLine(results.ToJsonObject().ToJsonString());
 Memory operations return hand-written response records/classes such as
 `StatusResponse`, `SearchResponse`, `ShowEventResponse`, and
 `LocateSessionResponse`. Each response exposes typed properties for stable
-memory-v1 fields and `ToJsonObject()` for the canonical envelope, so unknown
+agent-history-v1 fields and `ToJsonObject()` for the canonical envelope, so unknown
 future fields remain additive and accessible. SDK failures derive from
 `CtxMemoryException` and expose `Code`, `Retryable`, `Details`, and
 `ToMemoryError()`.
@@ -100,7 +100,7 @@ dotnet run --project sdks/dotnet/tests/Ctx.Memory.Tests/Ctx.Memory.Tests.csproj
 dotnet run --project sdks/dotnet/examples/LocalMemorySmoke/LocalMemorySmoke.csproj
 ```
 
-The test project uses the shared fixtures under `contracts/memory-v1/fixtures`
+The test project uses the shared fixtures under `contracts/agent-history-v1/fixtures`
 and does not require a NuGet test framework.
 
 `LocalMemorySmoke` uses an in-process fake transport unless `CTX_MEMORY_CTX` is

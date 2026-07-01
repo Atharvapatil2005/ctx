@@ -1,4 +1,4 @@
-"""Normalization helpers for the memory-v1 contract."""
+"""Normalization helpers for the agent-history-v1 contract."""
 
 from __future__ import annotations
 

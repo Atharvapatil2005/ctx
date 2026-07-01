@@ -1,5 +1,5 @@
 {
-  "contractVersion": "memory-v1",
+  "contractVersion": "agent-history-v1",
   "schemaVersion": 1,
   "operation": "search",
   "backend": {
@@ -7,7 +7,7 @@
     "dataRoot": "/tmp/ctx-sdk-fixture"
   },
   "search": {
-    "query": "local memory",
+    "query": "local agent history",
     "filters": {
       "provider": "codex"
     },
@@ -28,7 +28,7 @@
         "providerSessionId": "codex-fixture-session",
         "eventSeq": 1,
         "title": "Fixture session",
-        "snippet": "local memory search result",
+        "snippet": "local agent history search result",
         "rank": 0.98,
         "resultScope": "event",
         "provider": "codex",

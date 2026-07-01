@@ -3,7 +3,7 @@ package rs.ctx.memory;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Backend metadata for a memory-v1 response. */
+/** Backend metadata for a agent-history-v1 response. */
 public final class Backend {
     private final String kind;
     private final String dataRoot;

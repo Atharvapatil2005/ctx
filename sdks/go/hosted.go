@@ -2,7 +2,7 @@ package ctxmemory
 
 import "context"
 
-// HostedConfig reserves the hosted memory-v1 configuration surface.
+// HostedConfig reserves the hosted agent-history-v1 configuration surface.
 type HostedConfig struct {
 	BaseURL string
 	APIKey  string
@@ -28,10 +28,10 @@ func (h hostedTransport) Do(_ context.Context, op Operation) ([]byte, error) {
 	}
 	return nil, &Error{
 		Kind:    ErrorKindHostedNotImplemented,
-		Message: "hosted ctx memory backend is not available in this in-repo SDK",
+		Message: "hosted ctx agent history backend is not available in this in-repo SDK",
 		Err: &MemoryError{
 			Code:      ErrorKindHostedNotImplemented,
-			Message:   "hosted ctx memory backend is not available in this in-repo SDK",
+			Message:   "hosted ctx agent history backend is not available in this in-repo SDK",
 			Retryable: false,
 			Details:   details,
 		},

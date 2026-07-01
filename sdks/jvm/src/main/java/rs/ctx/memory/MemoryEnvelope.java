@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Canonical memory-v1 envelope shared by all typed responses. */
+/** Canonical agent-history-v1 envelope shared by all typed responses. */
 public class MemoryEnvelope {
-    public static final String CONTRACT_VERSION = "memory-v1";
+    public static final String CONTRACT_VERSION = "agent-history-v1";
     public static final int SCHEMA_VERSION = 1;
 
     private final String contractVersion;

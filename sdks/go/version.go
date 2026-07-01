@@ -7,9 +7,9 @@ import (
 
 const (
 	// APIVersion identifies the ctx memory contract implemented by this SDK.
-	APIVersion = "memory-v1"
+	APIVersion = "agent-history-v1"
 
-	// SchemaVersion is the JSON schema version emitted by ctx memory-v1 commands.
+	// SchemaVersion is the JSON schema version emitted by ctx agent-history-v1 commands.
 	SchemaVersion = 1
 
 	// SDKVersion is the experimental Go SDK version.

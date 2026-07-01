@@ -66,7 +66,7 @@ class CtxMemoryCliError(CtxMemoryError):
 
 
 class CtxMemoryProtocolError(CtxMemoryError):
-    """Raised when ctx does not return the expected memory-v1 JSON."""
+    """Raised when ctx does not return the expected agent-history-v1 JSON."""
 
     def __init__(
         self,
@@ -108,7 +108,7 @@ class HostedTransportNotImplementedError(CtxMemoryError):
 
     def __init__(self, method: str) -> None:
         super().__init__(
-            "hosted ctx memory backend is not available in this in-repo SDK",
+            "hosted ctx agent history backend is not available in this in-repo SDK",
             code="not_supported",
             details={"backend": "hosted", "method": method},
             retryable=False,

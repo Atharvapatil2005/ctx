@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-// LocalCLIAdapter executes memory-v1 operations through the local ctx binary.
+// LocalCLIAdapter executes agent-history-v1 operations through the local ctx binary.
 type LocalCLIAdapter struct {
 	path     string
 	dataRoot string

@@ -1,8 +1,8 @@
 # SDK Production Readiness
 
-The in-repo SDKs are product-facing memory clients for `memory-v1`. They are not
-package-manager artifacts yet, but they should be boringly reliable before
-external consumers build on them.
+The in-repo SDKs are product-facing agent history clients for
+`agent-history-v1`. They are not package-manager artifacts yet, but they should
+be boringly reliable before external consumers build on them.
 
 ## Public API Rules
 
@@ -25,8 +25,8 @@ Every SDK should have:
 
 - unit tests for request construction and typed response decoding;
 - fixture conformance tests for every JSON file in
-  `contracts/memory-v1/fixtures`;
-- structured error tests for all `memory-v1` error codes;
+  `contracts/agent-history-v1/fixtures`;
+- structured error tests for all `agent-history-v1` error codes;
 - timeout/cancellation tests using idiomatic language primitives;
 - a dogfood toy app or example that exercises `init`, `import` or `sync`,
   `search`, `showEvent`, `showSession`, `locateEvent`, and `locateSession`

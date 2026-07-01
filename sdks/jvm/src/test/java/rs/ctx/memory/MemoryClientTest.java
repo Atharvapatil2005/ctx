@@ -40,7 +40,7 @@ public final class MemoryClientTest {
 
         StatusResponse response = client.status();
 
-        assertEquals("memory-v1", response.contractVersion());
+        assertEquals("agent-history-v1", response.contractVersion());
         assertEquals(Integer.valueOf(1), Integer.valueOf(response.schemaVersion()));
         assertEquals("status", response.operation());
         assertEquals("local", response.getBackend().getKind());
@@ -56,11 +56,11 @@ public final class MemoryClientTest {
         String fixture = readFixture("search.results.json");
         MemoryClient client = MemoryClient.withTransport(new FakeTransport("local-cli", fixture));
 
-        SearchResponse response = client.search(MemoryOptions.search().query("local memory").refresh("off"));
+        SearchResponse response = client.search(MemoryOptions.search().query("local agent history").refresh("off"));
 
         assertEquals("search", response.operation());
         assertEquals("/tmp/ctx-sdk-fixture", response.getBackend().getDataRoot());
-        assertEquals("local memory", response.getSearch().getQuery());
+        assertEquals("local agent history", response.getSearch().getQuery());
         assertEquals("codex", response.getSearch().getFilters().getProvider());
         assertEquals(Integer.valueOf(20), response.getSearch().getPagination().getLimit());
         assertEquals(Boolean.FALSE, response.getSearch().getTruncation().getTruncated());
@@ -104,7 +104,7 @@ public final class MemoryClientTest {
     }
 
     private static void decodesAllCanonicalFixturesThroughTypedResponses() throws Exception {
-        java.nio.file.Path root = Paths.get("../../contracts/memory-v1/fixtures");
+        java.nio.file.Path root = Paths.get("../../contracts/agent-history-v1/fixtures");
         try (java.util.stream.Stream<java.nio.file.Path> paths = Files.list(root)) {
             paths
                     .filter(path -> path.getFileName().toString().endsWith(".json"))
@@ -186,7 +186,7 @@ public final class MemoryClientTest {
     }
 
     private static String readFixture(String name) throws Exception {
-        byte[] bytes = Files.readAllBytes(Paths.get("../../contracts/memory-v1/fixtures", name));
+        byte[] bytes = Files.readAllBytes(Paths.get("../../contracts/agent-history-v1/fixtures", name));
         return new String(bytes, StandardCharsets.UTF_8);
     }
 

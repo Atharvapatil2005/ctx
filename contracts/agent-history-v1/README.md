@@ -1,8 +1,8 @@
-# ctx Memory Contract v1
+# ctx Agent History Contract v1
 
-`memory-v1` is the experimental in-repo SDK contract for embedding ctx as
-agent-memory infrastructure. It is intentionally product-shaped rather than a
-mirror of ctx storage internals.
+`agent-history-v1` is the experimental in-repo SDK contract for embedding ctx as
+agent history search infrastructure. It is intentionally product-shaped rather
+than a mirror of ctx storage internals.
 
 The contract supports two backends:
 
@@ -16,7 +16,7 @@ release tooling, or raw Rust crate shapes as their public API.
 
 ## Versioning
 
-- Contract id: `memory-v1`
+- Contract id: `agent-history-v1`
 - Current schema version: `1`
 - SDKs expose their own SDK version separately from `contractVersion`.
 - Unknown JSON fields are additive and must be ignored or preserved.
@@ -24,8 +24,8 @@ release tooling, or raw Rust crate shapes as their public API.
 
 ## Public Operations
 
-All operations return JSON objects with `contractVersion: "memory-v1"` and
-`schemaVersion: 1`, or raise/return a structured `MemoryError`.
+All operations return JSON objects with `contractVersion: "agent-history-v1"` and
+`schemaVersion: 1`, or raise/return a structured SDK error.
 
 | Operation | Purpose |
 | --- | --- |
@@ -33,7 +33,7 @@ All operations return JSON objects with `contractVersion: "memory-v1"` and
 | `init()` | Initialize local ctx storage, optionally catalog-only. |
 | `sources()` | List local provider sources and importability. |
 | `importMemory()` / `sync()` | Import local provider history into ctx. |
-| `search()` | Search indexed memory. |
+| `search()` | Search indexed agent history. |
 | `showEvent()` | Return one event or an event window. |
 | `showSession()` | Return a session transcript. |
 | `locateEvent()` | Return event provenance and source location. |
@@ -58,13 +58,13 @@ Important reusable records:
 - `Freshness`: pre-search refresh mode/status/totals.
 - `Citation`: ctx event/session/file/source citation fields.
 - `SourceLocation`: path/cursor/source id/source format/existence.
-- `MemoryError`: `code`, `message`, `retryable`, optional `details`, and
+- Structured error: `code`, `message`, `retryable`, optional `details`, and
   optional `cause`.
 
 ## CLI Adapter Mapping
 
 Current SDK local adapters call these private CLI JSON commands and normalize
-them into `memory-v1` wrappers:
+them into `agent-history-v1` wrappers:
 
 - `ctx status --json`
 - `ctx setup --json`
@@ -77,4 +77,4 @@ them into `memory-v1` wrappers:
 - `ctx locate session ... --format json`
 
 This mapping is an adapter detail. SDK consumers should depend on
-`memory-v1`, not on CLI rendering or SQLite storage.
+`agent-history-v1`, not on CLI rendering or SQLite storage.

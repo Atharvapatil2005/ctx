@@ -16,7 +16,7 @@ skip() {
   skipped=$((skipped + 1))
 }
 
-run python3 scripts/check-memory-contract.py
+run python3 scripts/check-agent-history-contract.py
 run bash scripts/check-sdk-no-publish.sh
 run cargo test -p ctx-protocol -p ctx-sdk
 

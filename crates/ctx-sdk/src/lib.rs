@@ -1,7 +1,7 @@
 //! Experimental in-repo Rust SDK for ctx memory.
 //!
 //! This SDK is intentionally not published. The local backend shells out to the
-//! `ctx` CLI and adapts its private JSON into the public `memory-v1` envelope.
+//! `ctx` CLI and adapts its private JSON into the public `agent-history-v1` envelope.
 
 use std::{
     path::{Path, PathBuf},
@@ -362,7 +362,7 @@ impl MemoryClient {
                         details: Some(details),
                         ..MemoryErrorBody::new(
                             MemoryErrorCode::NotSupported,
-                            "hosted ctx memory backend is not available in this in-repo SDK",
+                            "hosted ctx agent history backend is not available in this in-repo SDK",
                             false,
                         )
                     },
@@ -491,7 +491,7 @@ fn decode_payload<T: DeserializeOwned>(value: Value, payload: &str) -> Result<T,
     serde_json::from_value(value).map_err(|err| {
         MemoryError::new(
             MemoryErrorCode::DecodeError,
-            format!("failed to decode memory-v1 {payload} payload"),
+            format!("failed to decode agent-history-v1 {payload} payload"),
             false,
         )
         .with_cause(err.to_string())
@@ -574,7 +574,7 @@ fn normalize_location(raw: &Value) -> Result<LocationResult, MemoryError> {
 
 pub fn fixture_path(name: impl AsRef<Path>) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../contracts/memory-v1/fixtures")
+        .join("../../contracts/agent-history-v1/fixtures")
         .join(name)
 }
 
@@ -589,13 +589,13 @@ mod tests {
     #[test]
     fn reads_shared_search_fixture() {
         let value: MemoryEnvelope = serde_json::from_str(include_str!(
-            "../../../contracts/memory-v1/fixtures/search.results.json"
+            "../../../contracts/agent-history-v1/fixtures/search.results.json"
         ))
         .unwrap();
         assert_eq!(value.contract_version, CONTRACT_VERSION);
         assert_eq!(value.operation, MemoryOperation::Search);
         let search = value.search.unwrap();
-        assert_eq!(search.query.as_deref(), Some("local memory"));
+        assert_eq!(search.query.as_deref(), Some("local agent history"));
         assert_eq!(search.results.len(), 1);
         assert_eq!(
             search.results[0].ctx_event_id.as_deref(),

@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 
-export const MEMORY_V1_VERSION = "memory-v1";
+export const AGENT_HISTORY_V1_VERSION = "agent-history-v1";
 export const SDK_VERSION = "0.0.0";
 
 export class CtxError extends Error {
@@ -214,7 +214,7 @@ export class LocalMemoryClient {
     const raw = result.stdout.trim();
     return {
       schema_version: 1,
-      api_version: MEMORY_V1_VERSION,
+      api_version: AGENT_HISTORY_V1_VERSION,
       sdk_version: SDK_VERSION,
       adapter: "local-cli",
       ctx_version: parseCtxVersion(raw),
@@ -299,7 +299,7 @@ export class HostedMemoryClient {
   version() {
     return Promise.resolve({
       schema_version: 1,
-      api_version: MEMORY_V1_VERSION,
+      api_version: AGENT_HISTORY_V1_VERSION,
       sdk_version: SDK_VERSION,
       adapter: "hosted-placeholder",
       hosted: false,
@@ -325,7 +325,7 @@ export function createMemoryClient(options = {}) {
 function hostedUnsupported() {
   return Promise.reject(
     new CtxUnsupportedError(
-      "The hosted memory-v1 transport is reserved for future ctx service support. Use the local CLI adapter today.",
+      "The hosted agent-history-v1 transport is reserved for future ctx service support. Use the local CLI adapter today.",
       { details: { adapter: "hosted-placeholder" } },
     ),
   );
@@ -333,7 +333,7 @@ function hostedUnsupported() {
 
 export function toMemoryEnvelope(operation, source, backend = undefined) {
   const envelope = {
-    contractVersion: MEMORY_V1_VERSION,
+    contractVersion: AGENT_HISTORY_V1_VERSION,
     schemaVersion: 1,
     operation,
     ...(backend ? { backend } : {}),
@@ -375,7 +375,7 @@ export function toMemoryEnvelope(operation, source, backend = undefined) {
       envelope.location = camelizeKeys(raw);
       break;
     default:
-      throw new CtxValidationError(`unsupported memory-v1 operation: ${operation}`, {
+      throw new CtxValidationError(`unsupported agent-history-v1 operation: ${operation}`, {
         details: { operation },
       });
   }

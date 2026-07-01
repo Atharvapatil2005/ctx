@@ -3,7 +3,7 @@ package ctxmemory
 // Object stores JSON sub-documents whose shape can grow across ctx releases.
 type Object map[string]any
 
-// OperationName identifies a memory-v1 operation.
+// OperationName identifies a agent-history-v1 operation.
 type OperationName string
 
 const (
@@ -81,7 +81,7 @@ const (
 	ResultScopeSession ResultScope = "session"
 )
 
-// Envelope contains the fields common to every memory-v1 response.
+// Envelope contains the fields common to every agent-history-v1 response.
 type Envelope struct {
 	ContractVersion string        `json:"contractVersion"`
 	SchemaVersion   int           `json:"schemaVersion"`
@@ -96,7 +96,7 @@ type Backend struct {
 	BaseURL  string      `json:"baseUrl,omitempty"`
 }
 
-// MemoryError is the memory-v1 error shape.
+// MemoryError is the agent-history-v1 error shape.
 type MemoryError struct {
 	Code      ErrorKind `json:"code"`
 	Message   string    `json:"message"`
@@ -314,7 +314,7 @@ type SessionRecord struct {
 	Visibility        string `json:"visibility,omitempty"`
 }
 
-// Event is the memory-v1 event shape.
+// Event is the agent-history-v1 event shape.
 type Event struct {
 	CtxEventID     string     `json:"ctxEventId,omitempty"`
 	CtxSessionID   string     `json:"ctxSessionId,omitempty"`
@@ -367,7 +367,7 @@ type SourceLocation struct {
 	SourceFormat string `json:"sourceFormat,omitempty"`
 }
 
-// ErrorResponse is the memory-v1 structured error envelope.
+// ErrorResponse is the agent-history-v1 structured error envelope.
 type ErrorResponse struct {
 	Envelope
 	Error MemoryError `json:"error"`

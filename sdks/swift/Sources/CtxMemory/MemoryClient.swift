@@ -306,7 +306,7 @@ private func requireID(_ name: String, _ id: String) throws {
 private func hostedUnsupported(operation: MemoryOperation) -> CtxMemorySDKError {
     CtxMemorySDKError(
         code: .notSupported,
-        message: "hosted ctx memory backend is not available in this in-repo SDK",
+        message: "hosted ctx agent history backend is not available in this in-repo SDK",
         details: .object(["backend": .string("hosted"), "operation": .string(operation.rawValue)])
     )
 }
@@ -320,7 +320,7 @@ private func decodeTyped<T: Decodable>(_ value: JSONValue, as type: T.Type, cont
     } catch {
         throw CtxMemorySDKError(
             code: .decodeError,
-            message: "ctx returned a \(context) payload that does not match memory-v1",
+            message: "ctx returned a \(context) payload that does not match agent-history-v1",
             details: .object(["payload": value]),
             cause: String(describing: error)
         )

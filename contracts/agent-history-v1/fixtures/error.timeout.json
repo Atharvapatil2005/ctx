@@ -1,5 +1,5 @@
 {
-  "contractVersion": "memory-v1",
+  "contractVersion": "agent-history-v1",
   "schemaVersion": 1,
   "operation": "error",
   "backend": {
@@ -8,7 +8,7 @@
   },
   "error": {
     "code": "timeout",
-    "message": "ctx memory operation timed out",
+    "message": "ctx agent history operation timed out",
     "retryable": true,
     "details": {
       "timeoutMs": 1000

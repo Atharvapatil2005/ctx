@@ -109,7 +109,7 @@ final class CtxMemoryTests: XCTestCase {
             switch Array(request.arguments.dropFirst(2).prefix(2)) {
             case ["status", "--json"]:
                 return CommandResult(stdout: Self.statusJSON)
-            case ["search", "local memory"]:
+            case ["search", "local agent history"]:
                 return CommandResult(stdout: Self.searchJSON)
             case ["show", "event"]:
                 return CommandResult(stdout: Self.eventJSON)
@@ -129,8 +129,8 @@ final class CtxMemoryTests: XCTestCase {
         XCTAssertEqual(status.status.initialized, true)
         XCTAssertEqual(status.status.indexedItems, 3)
 
-        let search = try client.search("local memory", options: SearchOptions(limit: 1, refresh: "off"))
-        XCTAssertEqual(search.search.query, "local memory")
+        let search = try client.search("local agent history", options: SearchOptions(limit: 1, refresh: "off"))
+        XCTAssertEqual(search.search.query, "local agent history")
         XCTAssertEqual(search.search.results.first?.resultScope, "event")
         XCTAssertEqual(search.search.results.first?.citations.first?.label, "codex event")
 
@@ -140,7 +140,7 @@ final class CtxMemoryTests: XCTestCase {
 
         let session = try client.showSession("22222222-2222-4222-8222-222222222222")
         XCTAssertEqual(session.session.session?.providerSessionId, "codex-fixture-session")
-        XCTAssertEqual(session.session.events.first?.text, "local memory search result")
+        XCTAssertEqual(session.session.events.first?.text, "local agent history search result")
 
         let location = try client.locateEvent("11111111-1111-4111-8111-111111111111")
         XCTAssertEqual(location.location.provider, "codex")
@@ -157,11 +157,11 @@ final class CtxMemoryTests: XCTestCase {
         let version = try client.version()
 
         XCTAssertEqual(version.schemaVersion, 1)
-        XCTAssertEqual(version.apiVersion, MEMORY_V1_VERSION)
+        XCTAssertEqual(version.apiVersion, AGENT_HISTORY_V1_VERSION)
         XCTAssertEqual(version.sdkVersion, CTX_MEMORY_SWIFT_SDK_VERSION)
         XCTAssertEqual(version.adapter, "local-cli")
         XCTAssertEqual(version.ctxVersion, "1.2.3")
-        XCTAssertEqual(try client.versioning()["api_version"]?.stringValue, MEMORY_V1_VERSION)
+        XCTAssertEqual(try client.versioning()["api_version"]?.stringValue, AGENT_HISTORY_V1_VERSION)
     }
 
     func testStructuredErrors() throws {
@@ -235,7 +235,7 @@ final class CtxMemoryTests: XCTestCase {
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-            .appendingPathComponent("contracts/memory-v1/fixtures", isDirectory: true)
+            .appendingPathComponent("contracts/agent-history-v1/fixtures", isDirectory: true)
         let fixtureURLs = try FileManager.default
             .contentsOfDirectory(at: fixturesDirectory, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "json" }
@@ -243,7 +243,7 @@ final class CtxMemoryTests: XCTestCase {
 
         for url in fixtureURLs {
             let envelope = try decoder.decode(MemoryEnvelope.self, from: Data(contentsOf: url))
-            XCTAssertEqual(envelope.contractVersion, MEMORY_V1_VERSION, url.lastPathComponent)
+            XCTAssertEqual(envelope.contractVersion, AGENT_HISTORY_V1_VERSION, url.lastPathComponent)
             XCTAssertEqual(envelope.schemaVersion, 1, url.lastPathComponent)
             switch envelope.operation {
             case .status:
@@ -267,9 +267,9 @@ final class CtxMemoryTests: XCTestCase {
     }
 
     private static let statusJSON = #"{"initialized":true,"local_only":true,"data_root":"/tmp/ctx-sdk-test","indexed_items":3,"indexed_sources":1,"cataloged_sessions":1}"#
-    private static let searchJSON = #"{"query":"local memory","filters":{"provider":"codex"},"freshness":{"mode":"off","status":"skipped","source_count":0,"totals":{"imported_events":0}},"generated_at":"2026-07-01T12:00:00Z","results":[{"ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","provider_session_id":"codex-fixture-session","event_seq":1,"title":"Fixture session","snippet":"local memory search result","rank":0.98,"result_scope":"event","provider":"codex","timestamp":"2026-07-01T12:00:00Z","cwd":"/workspace/ctx","source_path":"/tmp/ctx-sdk-fixture/session.jsonl","source_exists":true,"cursor":"line:2","why_matched":["text"],"citations":[{"item_type":"event","ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","label":"codex event","provider":"codex","source_path":"/tmp/ctx-sdk-fixture/session.jsonl","source_exists":true,"cursor":"line:2"}],"suggested_next_commands":["ctx show event 11111111-1111-4111-8111-111111111111 --format json"],"visibility":"private"}],"pagination":{"limit":20},"truncation":{"truncated":false}}"#
-    private static let eventJSON = #"{"event":{"ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","sequence":1,"event_type":"message","role":"assistant","occurred_at":"2026-07-01T12:00:00Z","source":"codex","cursor":"line:2","text":"local memory search result","redaction_state":"redacted"},"events":[{"ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","sequence":1,"event_type":"message","role":"assistant","occurred_at":"2026-07-01T12:00:00Z","source":"codex","cursor":"line:2","text":"local memory search result","redaction_state":"redacted"}],"source":{"path":"/tmp/ctx-sdk-fixture/session.jsonl","cursor":"line:2","exists":true,"source_id":"33333333-3333-4333-8333-333333333333","source_format":"codex_session_jsonl"}}"#
-    private static let sessionJSON = #"{"session":{"ctx_session_id":"22222222-2222-4222-8222-222222222222","provider":"codex","provider_session_id":"codex-fixture-session","title":"Fixture session"},"events":[{"ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","sequence":1,"event_type":"message","role":"assistant","text":"local memory search result"}],"source":{"path":"/tmp/ctx-sdk-fixture/session.jsonl","exists":true,"source_format":"codex_session_jsonl"},"mode":"lite","format":"json"}"#
+    private static let searchJSON = #"{"query":"local agent history","filters":{"provider":"codex"},"freshness":{"mode":"off","status":"skipped","source_count":0,"totals":{"imported_events":0}},"generated_at":"2026-07-01T12:00:00Z","results":[{"ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","provider_session_id":"codex-fixture-session","event_seq":1,"title":"Fixture session","snippet":"local agent history search result","rank":0.98,"result_scope":"event","provider":"codex","timestamp":"2026-07-01T12:00:00Z","cwd":"/workspace/ctx","source_path":"/tmp/ctx-sdk-fixture/session.jsonl","source_exists":true,"cursor":"line:2","why_matched":["text"],"citations":[{"item_type":"event","ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","label":"codex event","provider":"codex","source_path":"/tmp/ctx-sdk-fixture/session.jsonl","source_exists":true,"cursor":"line:2"}],"suggested_next_commands":["ctx show event 11111111-1111-4111-8111-111111111111 --format json"],"visibility":"private"}],"pagination":{"limit":20},"truncation":{"truncated":false}}"#
+    private static let eventJSON = #"{"event":{"ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","sequence":1,"event_type":"message","role":"assistant","occurred_at":"2026-07-01T12:00:00Z","source":"codex","cursor":"line:2","text":"local agent history search result","redaction_state":"redacted"},"events":[{"ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","sequence":1,"event_type":"message","role":"assistant","occurred_at":"2026-07-01T12:00:00Z","source":"codex","cursor":"line:2","text":"local agent history search result","redaction_state":"redacted"}],"source":{"path":"/tmp/ctx-sdk-fixture/session.jsonl","cursor":"line:2","exists":true,"source_id":"33333333-3333-4333-8333-333333333333","source_format":"codex_session_jsonl"}}"#
+    private static let sessionJSON = #"{"session":{"ctx_session_id":"22222222-2222-4222-8222-222222222222","provider":"codex","provider_session_id":"codex-fixture-session","title":"Fixture session"},"events":[{"ctx_event_id":"11111111-1111-4111-8111-111111111111","ctx_session_id":"22222222-2222-4222-8222-222222222222","sequence":1,"event_type":"message","role":"assistant","text":"local agent history search result"}],"source":{"path":"/tmp/ctx-sdk-fixture/session.jsonl","exists":true,"source_format":"codex_session_jsonl"},"mode":"lite","format":"json"}"#
     private static let locationJSON = #"{"ctx_session_id":"22222222-2222-4222-8222-222222222222","ctx_event_id":"11111111-1111-4111-8111-111111111111","provider":"codex","provider_session_id":"codex-fixture-session","source":{"path":"/tmp/ctx-sdk-fixture/session.jsonl","cursor":"line:2","exists":true,"source_id":"33333333-3333-4333-8333-333333333333","source_format":"codex_session_jsonl"},"resume":{"cursor":"line:2"}}"#
 }
 

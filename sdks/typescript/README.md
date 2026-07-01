@@ -1,6 +1,6 @@
 # ctx TypeScript SDK
 
-Experimental in-repo TypeScript/JavaScript client for the `memory-v1` ctx API.
+Experimental in-repo TypeScript/JavaScript client for the `agent-history-v1` ctx API.
 The SDK currently talks to a local `ctx` CLI binary and does not require network
 access or API keys.
 
@@ -29,7 +29,7 @@ const results = await memory.search("sqlite storage", { refresh: "off" });
 - `locateSession(id)` and `locateSession({ provider, providerSession })` wrap `ctx locate session --format json`.
 - `version()` wraps `ctx --version` and reports SDK/API version metadata.
 
-All data methods return a `memory-v1` envelope with `contractVersion`,
+All data methods return a `agent-history-v1` envelope with `contractVersion`,
 `schemaVersion`, `operation`, and an operation-specific field such as `status`,
 `search`, or `location`. TypeScript consumers get operation-specific return
 types discriminated by `operation`; CLI JSON remains an adapter detail.
@@ -66,7 +66,7 @@ timeoutMs }` and returns `{ exitCode, stdout, stderr }`.
 
 `createHostedMemoryClient()` and `createMemoryClient({ hosted: true })` reserve
 the future hosted transport shape. Any data method rejects with
-`CtxUnsupportedError` until ctx exposes a hosted memory-v1 service.
+`CtxUnsupportedError` until ctx exposes a hosted agent-history-v1 service.
 
 ## Errors
 
@@ -84,5 +84,5 @@ npm test --prefix sdks/typescript
 ```
 
 Tests use Node's built-in test runner, mocked CLI runners, the dogfood example,
-shared `contracts/memory-v1/fixtures`, and a strict handwritten declaration
+shared `contracts/agent-history-v1/fixtures`, and a strict handwritten declaration
 typecheck.

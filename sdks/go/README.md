@@ -1,6 +1,6 @@
 # ctx Go SDK
 
-Experimental Go SDK for the local `ctx` memory-v1 JSON contract.
+Experimental Go SDK for the local `ctx` agent-history-v1 JSON contract.
 
 The SDK has no third-party dependencies and defaults to the local `ctx` CLI. It
 does not require network access or API keys.
@@ -29,7 +29,7 @@ func main() {
 
 ## API
 
-The public client mirrors memory-v1 operations:
+The public client mirrors agent-history-v1 operations:
 
 - `Status(ctx)`
 - `Init(ctx, InitOptions)`
@@ -59,7 +59,7 @@ client := ctxmemory.NewLocalClient(
 
 The adapter runs JSON-producing CLI commands such as `ctx status --json`,
 `ctx search --json`, and `ctx show event --format json`, then normalizes CLI
-JSON into `memory-v1` wrappers with `contractVersion` and `schemaVersion`.
+JSON into `agent-history-v1` wrappers with `contractVersion` and `schemaVersion`.
 
 ## Errors
 

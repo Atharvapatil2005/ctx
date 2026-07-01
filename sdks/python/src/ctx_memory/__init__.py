@@ -1,4 +1,4 @@
-"""Experimental Python SDK for the ctx memory-v1 API."""
+"""Experimental Python SDK for the ctx agent-history-v1 API."""
 
 from .client import MemoryClient
 from .config import HostedConfig, LocalConfig

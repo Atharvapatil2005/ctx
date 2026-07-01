@@ -50,7 +50,7 @@ func run(ctx context.Context, getenv func(string) string, stdout io.Writer) erro
 	fmt.Fprintf(stdout, "sync events=%d\n", syncResult.Import.Totals.ImportedEvents)
 
 	search, err := client.Search(ctx, ctxmemory.SearchOptions{
-		Query:   "local memory",
+		Query:   "local agent history",
 		Limit:   5,
 		Refresh: "off",
 	})
@@ -161,7 +161,7 @@ func (fakeTransport) Do(_ context.Context, op ctxmemory.Operation) ([]byte, erro
 		}
 	case "search":
 		envelope["search"] = map[string]any{
-			"query": "local memory",
+			"query": "local agent history",
 			"freshness": map[string]any{
 				"mode":        "off",
 				"status":      "skipped",
@@ -173,7 +173,7 @@ func (fakeTransport) Do(_ context.Context, op ctxmemory.Operation) ([]byte, erro
 					"ctxEventId":   fixtureEventID,
 					"ctxSessionId": fixtureSessionID,
 					"title":        "Dogfood fixture",
-					"snippet":      "local memory search result",
+					"snippet":      "local agent history search result",
 					"rank":         1.0,
 					"resultScope":  "event",
 					"provider":     "codex",
@@ -227,7 +227,7 @@ func dogfoodEvent() map[string]any {
 		"role":           "assistant",
 		"source":         "codex",
 		"cursor":         "line:1",
-		"text":           "local memory search result",
+		"text":           "local agent history search result",
 		"redactionState": "redacted",
 	}
 }

@@ -1,6 +1,6 @@
 # ctx Memory Swift SDK
 
-Experimental Swift SDK for the local ctx `memory-v1` API.
+Experimental Swift SDK for the local ctx `agent-history-v1` API.
 
 This package is intended for local development from this repository only. It has
 no registry publishing configuration and no external package dependencies.
@@ -38,7 +38,7 @@ print(results.search.results.map(\.snippet))
 
 ## API
 
-The public client mirrors the `memory-v1` operations:
+The public client mirrors the `agent-history-v1` operations:
 
 - `status()`
 - `initMemory()` / `initialize()`
@@ -52,7 +52,7 @@ The public client mirrors the `memory-v1` operations:
 - `locateSession()`
 - `version()` / `versioning()`
 
-Swift reserves `init` for initializers, so the memory-v1 `init` operation is
+Swift reserves `init` for initializers, so the agent-history-v1 `init` operation is
 exposed as `initMemory()` and `initialize()`. Returned envelopes still use
 `operation: "init"`.
 
@@ -94,7 +94,7 @@ local CLI failures.
 
 ## Fixtures
 
-The XCTest suite decodes all JSON files in `contracts/memory-v1/fixtures` through
+The XCTest suite decodes all JSON files in `contracts/agent-history-v1/fixtures` through
 the Swift envelope model. Run tests from this repository checkout so the shared
 contract fixture directory is available.
 

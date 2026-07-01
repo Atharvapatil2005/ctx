@@ -1,6 +1,6 @@
 # ctx-sdk for Rust
 
-Experimental in-repo Rust SDK for the ctx `memory-v1` contract.
+Experimental in-repo Rust SDK for the ctx `agent-history-v1` contract.
 
 This crate is not published to crates.io. Its API may change while the SDK
 contract is being shaped in-repo.
@@ -33,4 +33,4 @@ let results = client.search(SearchOptions {
 `show_session`, `locate_event`, and `locate_session`.
 
 The SDK returns `MemoryEnvelope` values from `ctx-protocol` with stable
-`memory-v1` fields. CLI JSON remains an adapter detail.
+`agent-history-v1` fields. CLI JSON remains an adapter detail.

@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 
 namespace Ctx.Memory;
 
-/// <summary>Common metadata carried by every memory-v1 response envelope.</summary>
+/// <summary>Common metadata carried by every agent-history-v1 response envelope.</summary>
 public abstract record MemoryResponse
 {
     private readonly JsonObject _json;

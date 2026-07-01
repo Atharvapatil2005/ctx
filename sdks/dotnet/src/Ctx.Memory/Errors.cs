@@ -96,7 +96,7 @@ public sealed class HostedTransportNotImplementedException : CtxMemoryException
 {
     public HostedTransportNotImplementedException(string method, HostedMemoryConfig config)
         : base(
-            "hosted ctx memory backend is not available in this in-repo SDK",
+            "hosted ctx agent history backend is not available in this in-repo SDK",
             "not_supported",
             retryable: false,
             details: BuildDetails(method, config))

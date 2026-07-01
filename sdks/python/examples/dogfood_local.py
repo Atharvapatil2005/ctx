@@ -66,7 +66,7 @@ def run_demo(client: MemoryClient) -> DogfoodSnapshot:
         init=client.init(catalog_only=True),
         imported=client.import_(provider="codex", resume=True),
         synced=client.sync(all=True),
-        search=client.search("local memory", provider="codex", limit=5, refresh="off"),
+        search=client.search("local agent history", provider="codex", limit=5, refresh="off"),
         event=client.show_event(EVENT_ID, window=1),
         session=client.show_session(SESSION_ID, mode="lite"),
         event_location=client.locate_event(EVENT_ID),
@@ -159,7 +159,7 @@ def _fake_ctx_script() -> str:
         elif args[:2] == ["search", "--json"]:
             payload.update(
                 {{
-                    "query": "local memory",
+                    "query": "local agent history",
                     "filters": {{"provider": "codex"}},
                     "freshness": {{"mode": "off", "status": "skipped"}},
                     "results": [
@@ -169,7 +169,7 @@ def _fake_ctx_script() -> str:
                             "provider_session_id": "codex-fixture-session",
                             "result_scope": "event",
                             "provider": "codex",
-                            "snippet": "local memory search result",
+                            "snippet": "local agent history search result",
                         }}
                     ],
                 }}
@@ -182,7 +182,7 @@ def _fake_ctx_script() -> str:
                         "ctx_session_id": SESSION_ID,
                         "event_type": "message",
                         "role": "assistant",
-                        "text": "local memory search result",
+                        "text": "local agent history search result",
                     }},
                     "events": [],
                     "source": {{"path": "/tmp/ctx-memory-dogfood/session.jsonl", "exists": True}},

@@ -20,7 +20,7 @@ class LocalConfig:
 
 @dataclass(frozen=True)
 class HostedConfig:
-    """Placeholder configuration for a future hosted memory-v1 transport."""
+    """Placeholder configuration for a future hosted agent-history-v1 transport."""
 
     base_url: str
     api_key: Optional[str] = None

@@ -10,7 +10,7 @@ public sealed record LocalMemoryConfig
     public TimeSpan? Timeout { get; init; }
 }
 
-/// <summary>Placeholder configuration for a future hosted memory-v1 transport.</summary>
+/// <summary>Placeholder configuration for a future hosted agent-history-v1 transport.</summary>
 public sealed record HostedMemoryConfig
 {
     public HostedMemoryConfig(string baseUrl)

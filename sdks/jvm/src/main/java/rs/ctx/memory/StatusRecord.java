@@ -2,7 +2,7 @@ package rs.ctx.memory;
 
 import java.util.Map;
 
-/** Local memory index status. */
+/** Local agent history index status. */
 public final class StatusRecord {
     private final Map<String, Object> fields;
     private final Freshness freshness;

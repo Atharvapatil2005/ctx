@@ -48,7 +48,7 @@ class LocalCliAdapterTests(unittest.TestCase):
 
             result = client.status()
 
-        self.assertEqual(result["contractVersion"], "memory-v1")
+        self.assertEqual(result["contractVersion"], "agent-history-v1")
         self.assertEqual(result["schemaVersion"], 1)
         self.assertEqual(result["operation"], "status")
         self.assertEqual(result["backend"], {"kind": "local", "dataRoot": "/tmp/ctx-data"})
@@ -151,7 +151,7 @@ class LocalCliAdapterTests(unittest.TestCase):
         self.assertIsNone(client.version().ctx_version)
         self.assertEqual(client.version().transport, "hosted")
 
-    def test_memory_v1_error_codes_are_all_represented(self) -> None:
+    def test_agent_history_v1_error_codes_are_all_represented(self) -> None:
         codes = {
             "invalid_request",
             "not_found",
@@ -169,18 +169,18 @@ class LocalCliAdapterTests(unittest.TestCase):
 
 
 class ContractFixtureSmokeTests(unittest.TestCase):
-    def test_memory_v1_fixtures_conform_to_operation_envelopes(self) -> None:
+    def test_agent_history_v1_fixtures_conform_to_operation_envelopes(self) -> None:
         root = Path(__file__).resolve().parents[3]
-        fixture_dir = root / "contracts" / "memory-v1" / "fixtures"
+        fixture_dir = root / "contracts" / "agent-history-v1" / "fixtures"
         fixtures = sorted(fixture_dir.glob("*.json")) if fixture_dir.exists() else []
         if not fixtures:
-            self.skipTest("contracts/memory-v1/fixtures has no JSON fixtures yet")
+            self.skipTest("contracts/agent-history-v1/fixtures has no JSON fixtures yet")
 
         for fixture in fixtures:
             with self.subTest(fixture=fixture.name):
                 with fixture.open("r", encoding="utf-8") as handle:
                     payload = json.load(handle)
-                assert_memory_v1_envelope(self, payload)
+                assert_agent_history_v1_envelope(self, payload)
 
 
 class DogfoodExampleTests(unittest.TestCase):
@@ -318,12 +318,12 @@ def _fake_ctx_script(*, fail: bool, invalid_json: bool, sleep: bool) -> str:
     )
 
 
-def assert_memory_v1_envelope(test: unittest.TestCase, payload: object) -> None:
+def assert_agent_history_v1_envelope(test: unittest.TestCase, payload: object) -> None:
     test.assertIsInstance(payload, dict)
     if not isinstance(payload, dict):
         return
 
-    test.assertEqual(payload["contractVersion"], "memory-v1")
+    test.assertEqual(payload["contractVersion"], "agent-history-v1")
     test.assertEqual(payload["schemaVersion"], 1)
     operation = payload["operation"]
     test.assertIn(operation, EXPECTED_PAYLOAD_KEYS)

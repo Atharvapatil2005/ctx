@@ -30,7 +30,7 @@ require_file_contains sdks/dotnet/src/Ctx.Memory/Ctx.Memory.csproj '<IsPackable>
   '.NET SDK project must keep IsPackable=false until NuGet publishing is intentional'
 
 if rg -n --glob '!scripts/check-sdk-no-publish.sh' \
-  --glob '!contracts/memory-v1/README.md' \
+  --glob '!contracts/agent-history-v1/README.md' \
   --glob '!docs/sdk-production-readiness.md' \
   --glob '!sdks/**/README.md' \
   --glob '!crates/ctx-sdk/README.md' \

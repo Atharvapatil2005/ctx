@@ -1,4 +1,4 @@
-//! Experimental `memory-v1` contract types shared by in-repo ctx SDKs.
+//! Experimental `agent-history-v1` contract types shared by in-repo ctx SDKs.
 //!
 //! These types describe the SDK product contract. They are not SQLite schema
 //! types and are not a promise to preserve current CLI JSON internals.
@@ -8,10 +8,10 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-pub const CONTRACT_VERSION: &str = "memory-v1";
+pub const CONTRACT_VERSION: &str = "agent-history-v1";
 pub const SCHEMA_VERSION: u16 = 1;
 
-/// Extensible JSON object used where `memory-v1` intentionally leaves room for
+/// Extensible JSON object used where `agent-history-v1` intentionally leaves room for
 /// backend-specific additive fields.
 pub type JsonObject = BTreeMap<String, Value>;
 
@@ -472,7 +472,7 @@ pub fn camel_alias_object(value: &Value, aliases: &[(&str, &str)]) -> Value {
 }
 
 /// Recursively converts snake_case object keys from private CLI JSON into the
-/// camelCase keys used by the public `memory-v1` contract.
+/// camelCase keys used by the public `agent-history-v1` contract.
 pub fn camelize_object_keys(value: &Value) -> Value {
     match value {
         Value::Array(items) => Value::Array(items.iter().map(camelize_object_keys).collect()),
@@ -513,7 +513,7 @@ mod tests {
     use super::*;
 
     fn fixture_root() -> PathBuf {
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts/memory-v1/fixtures")
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts/agent-history-v1/fixtures")
     }
 
     #[test]
@@ -552,13 +552,13 @@ mod tests {
             }
             seen += 1;
         }
-        assert!(seen > 0, "expected shared memory-v1 fixtures");
+        assert!(seen > 0, "expected shared agent-history-v1 fixtures");
     }
 
     #[test]
     fn preserves_additive_fields() {
         let fixture = r#"{
-            "contractVersion": "memory-v1",
+            "contractVersion": "agent-history-v1",
             "schemaVersion": 1,
             "operation": "status",
             "status": {

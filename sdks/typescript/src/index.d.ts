@@ -1,4 +1,4 @@
-export declare const MEMORY_V1_VERSION = "memory-v1";
+export declare const AGENT_HISTORY_V1_VERSION = "agent-history-v1";
 export declare const SDK_VERSION = "0.0.0";
 
 export type Provider =
@@ -296,7 +296,7 @@ export interface MemoryErrorRecord {
 }
 
 export interface MemoryEnvelopeBase<TOperation extends MemoryOperation> {
-  contractVersion: typeof MEMORY_V1_VERSION;
+  contractVersion: typeof AGENT_HISTORY_V1_VERSION;
   schemaVersion: 1;
   operation: TOperation;
   backend?: MemoryBackend;
@@ -358,7 +358,7 @@ export type MemoryEnvelope = MemoryEnvelopeByOperation[MemoryOperation];
 
 export interface VersionInfo {
   schema_version: 1;
-  api_version: typeof MEMORY_V1_VERSION;
+  api_version: typeof AGENT_HISTORY_V1_VERSION;
   sdk_version: typeof SDK_VERSION;
   adapter: "local-cli" | "hosted-placeholder";
   ctx_version?: string;

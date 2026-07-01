@@ -15,7 +15,7 @@ public final class ToyMemoryApp {
 
         StatusResponse status = client.status();
         SearchResponse search = client.search(MemoryOptions.search()
-                .query("local memory")
+                .query("local agent history")
                 .provider("codex")
                 .refresh("off")
                 .limit(Integer.valueOf(5)));
@@ -40,7 +40,7 @@ public final class ToyMemoryApp {
                     + "\"indexed_sources\":1"
                     + "}");
             responses.put("search", "{"
-                    + "\"query\":\"local memory\","
+                    + "\"query\":\"local agent history\","
                     + "\"filters\":{\"provider\":\"codex\"},"
                     + "\"freshness\":{\"mode\":\"off\",\"status\":\"skipped\",\"source_count\":0},"
                     + "\"results\":[{"
@@ -48,7 +48,7 @@ public final class ToyMemoryApp {
                     + "\"ctx_session_id\":\"ses-toy-1\","
                     + "\"result_scope\":\"event\","
                     + "\"provider\":\"codex\","
-                    + "\"snippet\":\"toy local memory result\","
+                    + "\"snippet\":\"toy local agent history result\","
                     + "\"citations\":[{\"label\":\"toy event\",\"ctx_event_id\":\"evt-toy-1\"}]"
                     + "}],"
                     + "\"pagination\":{\"limit\":5},"
@@ -57,7 +57,7 @@ public final class ToyMemoryApp {
             responses.put("showEvent", "{"
                     + "\"event\":{\"ctx_event_id\":\"evt-toy-1\",\"ctx_session_id\":\"ses-toy-1\","
                     + "\"sequence\":1,\"event_type\":\"message\",\"role\":\"assistant\","
-                    + "\"source\":\"codex\",\"text\":\"toy local memory result\"},"
+                    + "\"source\":\"codex\",\"text\":\"toy local agent history result\"},"
                     + "\"events\":[{\"ctx_event_id\":\"evt-toy-1\",\"ctx_session_id\":\"ses-toy-1\",\"sequence\":1}],"
                     + "\"source\":{\"path\":\"/tmp/ctx-jvm-toy/session.jsonl\",\"cursor\":\"line:1\",\"exists\":false}"
                     + "}");

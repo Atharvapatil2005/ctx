@@ -40,7 +40,7 @@ public final class HostedMemoryClient extends MemoryClient {
             details.put("baseUrl", config.baseUrl());
             details.put("operation", operation.name());
             throw new CtxMemoryException.Unsupported(
-                    "hosted ctx memory backend is not available in this in-repo SDK",
+                    "hosted ctx agent history backend is not available in this in-repo SDK",
                     details);
         }
     }

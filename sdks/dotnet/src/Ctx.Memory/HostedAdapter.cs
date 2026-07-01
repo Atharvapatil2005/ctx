@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 
 namespace Ctx.Memory;
 
-/// <summary>Hosted memory-v1 placeholder. It performs no network I/O.</summary>
+/// <summary>Hosted agent-history-v1 placeholder. It performs no network I/O.</summary>
 public sealed class HostedAdapter : IMemoryTransport
 {
     public HostedAdapter(HostedMemoryConfig config)

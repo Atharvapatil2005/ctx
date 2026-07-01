@@ -1,5 +1,5 @@
 {
-  "contractVersion": "memory-v1",
+  "contractVersion": "agent-history-v1",
   "schemaVersion": 1,
   "operation": "error",
   "backend": {
@@ -7,12 +7,12 @@
     "dataRoot": "/tmp/ctx-sdk-fixture"
   },
   "error": {
-    "code": "adapter_error",
-    "message": "local ctx adapter failed",
+    "code": "invalid_request",
+    "message": "event id is required",
     "retryable": false,
     "details": {
-      "adapter": "local-cli"
+      "field": "eventId"
     },
-    "cause": "exit status 2"
+    "cause": null
   }
 }

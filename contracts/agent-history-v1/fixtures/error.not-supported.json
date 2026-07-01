@@ -1,5 +1,5 @@
 {
-  "contractVersion": "memory-v1",
+  "contractVersion": "agent-history-v1",
   "schemaVersion": 1,
   "operation": "error",
   "backend": {
@@ -8,7 +8,7 @@
   },
   "error": {
     "code": "not_supported",
-    "message": "hosted ctx memory backend is not available in this in-repo SDK",
+    "message": "hosted ctx agent history backend is not available in this in-repo SDK",
     "retryable": false,
     "details": {
       "backend": "hosted"

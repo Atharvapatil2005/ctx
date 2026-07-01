@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 
 namespace Ctx.Memory;
 
-/// <summary>Executes adapter-specific memory-v1 operations.</summary>
+/// <summary>Executes adapter-specific agent-history-v1 operations.</summary>
 public interface IMemoryTransport
 {
     string Name { get; }

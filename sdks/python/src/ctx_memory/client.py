@@ -1,4 +1,4 @@
-"""Public memory-v1 client."""
+"""Public agent-history-v1 client."""
 
 from __future__ import annotations
 
@@ -26,10 +26,10 @@ Pathish = Union[str, Path]
 
 
 class MemoryClient:
-    """Client for the ctx memory-v1 API.
+    """Client for the ctx agent-history-v1 API.
 
     The default transport is local and executes the ctx CLI. Data methods
-    return memory-v1 envelope dictionaries unless noted otherwise.
+    return agent-history-v1 envelope dictionaries unless noted otherwise.
     """
 
     def __init__(self, transport: MemoryTransport):

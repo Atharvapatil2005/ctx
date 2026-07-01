@@ -26,7 +26,7 @@ export function createDogfoodClient(options = {}) {
 export async function runDogfoodToy(options = {}) {
   const client = options.client ?? createDogfoodClient(options);
   const status = await client.status();
-  const search = await client.search("local memory", {
+  const search = await client.search("local agent history", {
     limit: 3,
     provider: "codex",
     refresh: "off",
@@ -88,7 +88,7 @@ function mockResponse(args) {
           event_seq: 1,
           result_scope: "event",
           provider: "codex",
-          snippet: "local memory search result",
+          snippet: "local agent history search result",
           source_path: SOURCE_PATH,
           source_exists: true,
           cursor: "line:2",
@@ -139,7 +139,7 @@ function mockEvent() {
     occurred_at: "2026-07-01T12:00:00Z",
     source: "codex",
     cursor: "line:2",
-    text: "local memory search result",
+    text: "local agent history search result",
   };
 }
 

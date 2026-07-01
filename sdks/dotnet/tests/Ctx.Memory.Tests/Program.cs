@@ -7,16 +7,16 @@ internal static class Program
     {
         var tests = new (string Name, Func<Task> Body)[]
         {
-            ("wraps status as memory-v1", WrapsStatus),
+            ("wraps status as agent-history-v1", WrapsStatus),
             ("preserves additive response fields", PreservesAdditiveFields),
             ("builds local CLI operation arguments", BuildsOperationArguments),
             ("normalizes setup init status", NormalizesSetupInitStatus),
             ("builds search flags", BuildsSearchFlags),
             ("wraps show and locate commands", WrapsShowAndLocate),
             ("reports versioning metadata", ReportsVersioning),
-            ("uses memory-v1 error codes", UsesMemoryV1ErrorCodes),
+            ("uses agent-history-v1 error codes", UsesMemoryV1ErrorCodes),
             ("raises structured hosted placeholder errors", HostedPlaceholderError),
-            ("loads shared memory-v1 fixtures", LoadsSharedFixtures)
+            ("loads shared agent-history-v1 fixtures", LoadsSharedFixtures)
         };
 
         var failures = 0;
@@ -58,14 +58,14 @@ internal static class Program
 
         var status = await client.StatusAsync();
 
-        Equal("memory-v1", status.ContractVersion);
+        Equal("agent-history-v1", status.ContractVersion);
         Equal("status", status.Operation);
         Equal("local", status.Backend.Kind);
         Equal(true, status.Status.Initialized);
         Equal(4, status.Status.IndexedItems ?? -1);
 
         var envelope = status.ToJsonObject();
-        Equal("memory-v1", envelope["contractVersion"]!.GetValue<string>());
+        Equal("agent-history-v1", envelope["contractVersion"]!.GetValue<string>());
         Equal(4, envelope["status"]!["indexedItems"]!.GetValue<int>());
     }
 
@@ -201,7 +201,7 @@ internal static class Program
             seen++;
             var node = JsonNode.Parse(File.ReadAllText(path))?.AsObject()
                 ?? throw new InvalidOperationException($"{path} did not contain a JSON object");
-            Equal("memory-v1", node["contractVersion"]!.GetValue<string>());
+            Equal("agent-history-v1", node["contractVersion"]!.GetValue<string>());
             Equal(1, node["schemaVersion"]!.GetValue<int>());
             var operation = node["operation"]!.GetValue<string>();
             switch (operation)
@@ -248,7 +248,7 @@ internal static class Program
                     throw new InvalidOperationException($"unknown fixture operation {operation} in {path}");
             }
         }
-        True(seen > 0, "expected shared memory-v1 fixtures");
+        True(seen > 0, "expected shared agent-history-v1 fixtures");
     }
 
     private static MemoryClient ClientFor(JsonNode? payload)
@@ -268,7 +268,7 @@ internal static class Program
             var dir = new DirectoryInfo(start);
             while (dir is not null)
             {
-                var candidate = Path.Combine(dir.FullName, "contracts", "memory-v1", "fixtures");
+                var candidate = Path.Combine(dir.FullName, "contracts", "agent-history-v1", "fixtures");
                 if (Directory.Exists(candidate))
                 {
                     return candidate;
@@ -276,7 +276,7 @@ internal static class Program
                 dir = dir.Parent;
             }
         }
-        throw new DirectoryNotFoundException("contracts/memory-v1/fixtures");
+        throw new DirectoryNotFoundException("contracts/agent-history-v1/fixtures");
     }
 
     private static string Join(IReadOnlyList<string> values) => string.Join(" ", values);

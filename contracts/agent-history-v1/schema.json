@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ctx.rs/contracts/memory-v1/schema.json",
-  "title": "ctx Memory Contract v1",
+  "$id": "https://ctx.rs/contracts/agent-history-v1/schema.json",
+  "title": "ctx Agent History Contract v1",
   "type": "object",
   "required": ["contractVersion", "schemaVersion", "operation"],
   "properties": {
-    "contractVersion": { "const": "memory-v1" },
+    "contractVersion": { "const": "agent-history-v1" },
     "schemaVersion": { "const": 1 },
     "operation": {
       "enum": [

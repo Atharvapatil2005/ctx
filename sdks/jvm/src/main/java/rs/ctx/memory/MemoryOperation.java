@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-/** Adapter-neutral memory-v1 operation executed by a transport. */
+/** Adapter-neutral agent-history-v1 operation executed by a transport. */
 public final class MemoryOperation {
     private final String name;
     private final List<String> args;

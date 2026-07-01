@@ -12,7 +12,7 @@ var imported = await client.ImportMemoryAsync(new ImportOptions { Provider = "co
 var synced = await client.SyncAsync(new ImportOptions { All = true });
 var search = await client.SearchAsync(new SearchOptions
 {
-    Query = "local memory",
+    Query = "local agent history",
     Provider = "codex",
     Limit = 5,
     Refresh = "off"
@@ -156,7 +156,7 @@ internal sealed class FakeMemoryTransport : IMemoryTransport
     private static JsonObject Search()
     {
         var payload = Base();
-        payload["query"] = "local memory";
+        payload["query"] = "local agent history";
         payload["filters"] = new JsonObject { ["provider"] = "codex" };
         payload["freshness"] = new JsonObject { ["mode"] = "off", ["status"] = "skipped" };
         payload["results"] = new JsonArray
@@ -169,7 +169,7 @@ internal sealed class FakeMemoryTransport : IMemoryTransport
                 ["event_seq"] = 1,
                 ["result_scope"] = "event",
                 ["provider"] = "codex",
-                ["snippet"] = "local memory smoke result",
+                ["snippet"] = "local agent history smoke result",
                 ["source_path"] = $"{DataRoot}/session.jsonl",
                 ["source_exists"] = true
             }
@@ -187,7 +187,7 @@ internal sealed class FakeMemoryTransport : IMemoryTransport
             ["sequence"] = 1,
             ["event_type"] = "message",
             ["role"] = "assistant",
-            ["text"] = "local memory smoke result"
+            ["text"] = "local agent history smoke result"
         };
         payload["events"] = new JsonArray();
         payload["source"] = Source();

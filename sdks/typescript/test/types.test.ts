@@ -37,7 +37,7 @@ const synced = await client.sync({ all: true });
 expectType<ImportEnvelope<"sync">>(synced);
 expectType<"sync">(synced.operation);
 
-const search = await client.search("local memory", { refresh: "off" });
+const search = await client.search("local agent history", { refresh: "off" });
 expectType<SearchEnvelope>(search);
 expectType<string>(search.search.results[0]!.resultScope);
 expectType<string | null | undefined>(search.search.results[0]!.ctxEventId);

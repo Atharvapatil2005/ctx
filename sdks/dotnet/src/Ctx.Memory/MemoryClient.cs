@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 
 namespace Ctx.Memory;
 
-/// <summary>Client for the experimental ctx memory-v1 API.</summary>
+/// <summary>Client for the experimental ctx agent-history-v1 API.</summary>
 public sealed class MemoryClient
 {
     private readonly IMemoryTransport _transport;

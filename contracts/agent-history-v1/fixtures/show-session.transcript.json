@@ -1,5 +1,5 @@
 {
-  "contractVersion": "memory-v1",
+  "contractVersion": "agent-history-v1",
   "schemaVersion": 1,
   "operation": "showSession",
   "backend": {
@@ -20,7 +20,7 @@
         "sequence": 1,
         "eventType": "message",
         "role": "assistant",
-        "text": "local memory search result"
+        "text": "local agent history search result"
       }
     ],
     "source": {
