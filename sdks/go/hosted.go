@@ -1,0 +1,39 @@
+package ctxmemory
+
+import "context"
+
+// HostedConfig reserves the hosted memory-v1 configuration surface.
+type HostedConfig struct {
+	BaseURL string
+	APIKey  string
+}
+
+// NewHostedClient creates a placeholder hosted client. Operations return
+// ErrorKindHostedNotImplemented without making network calls.
+func NewHostedClient(config HostedConfig) *Client {
+	return NewClient(WithTransport(hostedTransport{config: config}))
+}
+
+type hostedTransport struct {
+	config HostedConfig
+}
+
+func (h hostedTransport) Do(_ context.Context, op Operation) ([]byte, error) {
+	if op.Name == "version" {
+		return []byte(""), nil
+	}
+	details := Object{"backend": "hosted"}
+	if h.config.BaseURL != "" {
+		details["baseUrl"] = h.config.BaseURL
+	}
+	return nil, &Error{
+		Kind:    ErrorKindHostedNotImplemented,
+		Message: "hosted ctx memory backend is not available in this in-repo SDK",
+		Err: &MemoryError{
+			Code:      ErrorKindHostedNotImplemented,
+			Message:   "hosted ctx memory backend is not available in this in-repo SDK",
+			Retryable: false,
+			Details:   details,
+		},
+	}
+}

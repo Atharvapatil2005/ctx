@@ -143,6 +143,15 @@ const TOPICS: &[DocTopic] = &[
         body: include_str!("../../../docs/agent-skill-install.md"),
     },
     DocTopic {
+        id: "memory-sdks",
+        title: "Memory SDKs",
+        audience: "human-agent",
+        summary: "Use experimental in-repo SDKs for the memory-v1 contract.",
+        tags: &["sdk", "memory", "contracts"],
+        source_path: "docs/memory-sdks.md",
+        body: include_str!("../../../docs/memory-sdks.md"),
+    },
+    DocTopic {
         id: "json-contracts",
         title: "JSON Contracts",
         audience: "agent",
