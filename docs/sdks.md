@@ -1,10 +1,10 @@
-# Memory SDKs
+# SDKs
 
-ctx includes experimental in-repo SDKs for embedding local agent-memory search
-into tools, scripts, editors, and services.
+ctx includes experimental in-repo SDKs for using agent history search from
+tools, scripts, editors, and services.
 
 The SDKs all target the same `memory-v1` contract. They are thin clients over
-memory primitives, not wrappers around SQLite tables, migrations, release
+agent-history search primitives, not wrappers around SQLite tables, migrations, release
 tooling, or internal Rust crate shapes.
 
 ## Status

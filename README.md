@@ -120,7 +120,7 @@ ctx keeps retrieval tied to sessions and events, so another agent can inspect th
 | [Quickstart](https://ctx.rs/first-search) | Search local history, inspect an event, open the session, and use JSON output. |
 | [Install the ctx skill](https://ctx.rs/skill) | Install the agent-history search skill with the open skills installer. |
 | [Agent plugin installs](docs/agent-skill-install.md) | Install the ctx skill through Codex, Claude Code, Cursor, or a raw skill folder. |
-| [Memory SDKs](docs/memory-sdks.md) | Use ctx from TypeScript, Python, Rust, Go, JVM, Swift, or .NET code. |
+| [SDKs](docs/sdks.md) | Use ctx agent history search from TypeScript, Python, Rust, Go, JVM, Swift, or .NET code. |
 | [Cursor](https://ctx.rs/agents/cursor) | Import Cursor agent transcripts and ask Cursor to cite retrieved local history before editing. |
 | [How it works](https://ctx.rs/concepts/how-it-works) | Understand discovery, import, SQLite storage, search refresh, and cited retrieval. |
 | [Supported agents](https://ctx.rs/concepts/supported-agents) | See which agent histories ctx can discover, import, and search today. |
