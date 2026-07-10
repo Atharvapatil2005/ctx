@@ -174,8 +174,8 @@ export class LocalAgentHistoryClient {
   }
 
   async showEvent(id, options = {}) {
-    requireId("event id", id);
-    const args = ["show", "event", id, "--format", "json"];
+    const normalizedId = normalizeLookupId("event id", id);
+    const args = ["show", "event", normalizedId, "--format", "json"];
     appendOptionalNumber(args, "--before", options.before);
     appendOptionalNumber(args, "--after", options.after);
     appendOptionalNumber(args, "--window", options.window);
@@ -194,8 +194,8 @@ export class LocalAgentHistoryClient {
   }
 
   async locateEvent(id) {
-    requireId("event id", id);
-    return this.#agentHistoryJson("locateEvent", ["locate", "event", id, "--format", "json"]);
+    const normalizedId = normalizeLookupId("event id", id);
+    return this.#agentHistoryJson("locateEvent", ["locate", "event", normalizedId, "--format", "json"]);
   }
 
   async locateSession(idOrOptions) {
@@ -463,12 +463,13 @@ function hasSearchText(value) {
 
 function appendSessionLookupArgs(args, options) {
   if (options.id) {
-    args.push(options.id);
+    args.push(normalizeLookupId("session id", options.id));
     return;
   }
   appendOptional(args, "--provider", options.provider);
-  appendOptional(args, "--provider-session", options.providerSession);
-  if (!options.provider || !options.providerSession) {
+  const providerSession = normalizeLookupId("provider session id", options.providerSession);
+  appendOptional(args, "--provider-session", providerSession);
+  if (!options.provider || !providerSession) {
     throw new CtxValidationError(
       "session lookup requires either id or provider with providerSession",
       { details: { options } },
@@ -501,12 +502,21 @@ function appendFlag(args, flag, value) {
   }
 }
 
-function requireId(label, id) {
-  if (!id || typeof id !== "string") {
+function normalizeLookupId(label, value) {
+  if (typeof value !== "string") {
     throw new CtxValidationError(`${label} is required`, {
-      details: { value: id },
+      details: { value },
     });
   }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new CtxValidationError(`${label} is required`, {
+      details: { value },
+    });
+  }
+
+  return trimmed;
 }
 
 function cliError(message, result) {

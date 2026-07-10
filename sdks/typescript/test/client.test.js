@@ -289,6 +289,48 @@ test("wraps show and locate commands by ctx id and provider session id", async (
   );
 });
 
+test("rejects whitespace-only lookup identifiers before invoking CLI", async () => {
+  const { client, calls } = mockClient(() => {
+    throw new Error("runner should not be called");
+  });
+
+  await assert.rejects(() => client.showEvent("   "), CtxValidationError);
+  await assert.rejects(() => client.locateEvent("   "), CtxValidationError);
+  await assert.rejects(
+    () => client.showSession({ provider: "codex", providerSession: "   " }),
+    CtxValidationError,
+  );
+  await assert.rejects(
+    () => client.locateSession({ provider: "codex", providerSession: "   " }),
+    CtxValidationError,
+  );
+
+  assert.equal(calls.length, 0);
+});
+
+test("trims lookup identifiers before invoking CLI", async () => {
+  const { client, calls } = mockClient(() => "{}");
+
+  await client.showEvent("   abc   ");
+  await client.locateEvent("   abc   ");
+  await client.showSession("   abc   ");
+  await client.locateSession("   abc   ");
+  await client.showSession({ provider: "codex", providerSession: "   abc   " });
+  await client.locateSession({ provider: "codex", providerSession: "   abc   " });
+
+  assert.deepEqual(
+    calls.map((call) => call.args.slice(2)),
+    [
+      ["show", "event", "abc", "--format", "json"],
+      ["locate", "event", "abc", "--format", "json"],
+      ["show", "session", "abc", "--mode", "lite", "--format", "json"],
+      ["locate", "session", "abc", "--format", "json"],
+      ["show", "session", "--provider", "codex", "--provider-session", "abc", "--mode", "lite", "--format", "json"],
+      ["locate", "session", "--provider", "codex", "--provider-session", "abc", "--format", "json"],
+    ],
+  );
+});
+
 test("reports versioning metadata", async () => {
   const { client } = mockClient(() => "ctx 1.2.3\n");
 
