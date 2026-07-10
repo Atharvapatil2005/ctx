@@ -41,7 +41,7 @@ from .types import (
     StatusResponse,
     SyncResponse,
 )
-from .validation import validate_search_intent
+from .validation import normalize_lookup_id, validate_search_intent
 
 
 class AgentHistoryTransport(Protocol):
@@ -285,7 +285,7 @@ class LocalCliAdapter:
         before: Optional[int] = None,
         after: Optional[int] = None,
     ) -> ShowEventResponse:
-        args = ["show", "event", event_id, "--format", "json"]
+        args = ["show", "event", normalize_lookup_id("event id", event_id), "--format", "json"]
         if window is not None:
             args.extend(["--window", str(window)])
         if before is not None:
@@ -303,7 +303,7 @@ class LocalCliAdapter:
         )
 
     def show_session(self, session_id: str, *, mode: Optional[str] = None) -> ShowSessionResponse:
-        args = ["show", "session", session_id, "--format", "json"]
+        args = ["show", "session", normalize_lookup_id("session id", session_id), "--format", "json"]
         if mode is not None:
             args.extend(["--mode", mode])
         raw = self._json(args)
@@ -317,7 +317,7 @@ class LocalCliAdapter:
         )
 
     def locate_event(self, event_id: str) -> LocateEventResponse:
-        raw = self._json(["locate", "event", event_id, "--format", "json"])
+        raw = self._json(["locate", "event", normalize_lookup_id("event id", event_id), "--format", "json"])
         return cast(
             LocateEventResponse,
             envelope(
@@ -328,7 +328,7 @@ class LocalCliAdapter:
         )
 
     def locate_session(self, session_id: str) -> LocateSessionResponse:
-        raw = self._json(["locate", "session", session_id, "--format", "json"])
+        raw = self._json(["locate", "session", normalize_lookup_id("session id", session_id), "--format", "json"])
         return cast(
             LocateSessionResponse,
             envelope(

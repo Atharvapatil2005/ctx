@@ -33,6 +33,16 @@ def _has_text(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def normalize_lookup_id(label: str, value: Optional[str]) -> str:
+    if not isinstance(value, str):
+        raise CtxAgentHistoryValidationError(f"{label} is required", details={"value": value})
+
+    trimmed = value.strip()
+    if not trimmed:
+        raise CtxAgentHistoryValidationError(f"{label} is required", details={"value": value})
+    return trimmed
+
+
 def _term_details(terms: Optional[Sequence[str]]) -> list[str]:
     if terms is None:
         return []

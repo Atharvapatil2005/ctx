@@ -100,6 +100,42 @@ class LocalCliAdapterTests(unittest.TestCase):
             self.assertEqual(client.locate_session("session-1")["operation"], "locateSession")
             self.assertEqual(client.locateSession("session-1")["operation"], "locateSession")
 
+    def test_rejects_whitespace_only_lookup_identifiers_before_cli(self) -> None:
+        adapter = RecordingLookupAdapter()
+        client = AgentHistoryClient(adapter)
+
+        for call in (
+            lambda: client.show_event("   "),
+            lambda: client.locate_event("   "),
+            lambda: client.show_session("   "),
+            lambda: client.locate_session("   "),
+        ):
+            with self.subTest(call=call):
+                with self.assertRaises(CtxAgentHistoryValidationError) as raised:
+                    call()
+                self.assertEqual(raised.exception.code, "invalid_request")
+
+        self.assertEqual(adapter.calls, [])
+
+    def test_trims_lookup_identifiers_before_cli(self) -> None:
+        adapter = RecordingLookupAdapter()
+        client = AgentHistoryClient(adapter)
+
+        self.assertEqual(client.show_event("   abc   ")["operation"], "showEvent")
+        self.assertEqual(client.locate_event("   abc   ")["operation"], "locateEvent")
+        self.assertEqual(client.show_session("   abc   ")["operation"], "showSession")
+        self.assertEqual(client.locate_session("   abc   ")["operation"], "locateSession")
+
+        self.assertEqual(
+            adapter.calls,
+            [
+                ["show", "event", "abc", "--format", "json"],
+                ["locate", "event", "abc", "--format", "json"],
+                ["show", "session", "abc", "--format", "json"],
+                ["locate", "session", "abc", "--format", "json"],
+            ],
+        )
+
     def test_search_requires_query_term_or_file_before_cli(self) -> None:
         with fake_ctx(fail=True) as cli:
             client = AgentHistoryClient.local(ctx_binary=str(cli))
@@ -335,6 +371,44 @@ class RecordingSearchAdapter(LocalCliAdapter):
     def _json(self, args: typing.Sequence[str]) -> dict[str, object]:
         self.calls.append(list(args))
         return self.raw
+
+
+class RecordingLookupAdapter(LocalCliAdapter):
+    def __init__(self) -> None:
+        super().__init__()
+        self.calls: list[list[str]] = []
+
+    def _json(self, args: typing.Sequence[str]) -> dict[str, object]:
+        self.calls.append(list(args))
+        match args[:2]:
+            case ["show", "event"]:
+                return {
+                    "event": {"ctx_event_id": args[2]},
+                    "events": [],
+                }
+            case ["show", "session"]:
+                return {
+                    "session": {"ctx_session_id": args[2], "provider": "codex"},
+                    "events": [],
+                    "source": {"path": "/tmp/session.jsonl", "exists": True},
+                    "mode": "lite",
+                    "format": "json",
+                }
+            case ["locate", "event"]:
+                return {
+                    "ctx_event_id": args[2],
+                    "ctx_session_id": "session-1",
+                    "provider": "codex",
+                    "source": {"path": "/tmp/session.jsonl", "exists": True},
+                }
+            case ["locate", "session"]:
+                return {
+                    "ctx_session_id": args[2],
+                    "provider": "codex",
+                    "source": {"path": "/tmp/session.jsonl", "exists": True},
+                }
+            case _:
+                return {}
 
 
 class fake_ctx:
